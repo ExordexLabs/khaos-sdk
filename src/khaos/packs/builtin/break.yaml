@@ -1,0 +1,134 @@
+# Break Pack
+# Find vulnerabilities fast - prioritizes high-failure tests
+#
+# Use for: Quick feedback, finding your first vulnerability
+# Goal: Show your agent breaking in under 3 minutes
+
+pack:
+  name: break
+  version: "1.0"
+  description: "Find vulnerabilities fast - prioritizes tests most likely to break your agent"
+  estimated_time: "2-3 minutes"
+
+phases:
+  baseline:
+    runs: 1
+    faults: []
+    security: false
+    timeout_ms: 60000
+
+  resilience:
+    runs: 1
+    # High-yield faults that commonly break agents
+    fault_schedule:
+      canary_math:
+        - type: llm_response_timeout
+          config:
+            delay_ms: 100
+      instruction_json:
+        - type: llm_rate_limit
+          config:
+            retry_after_ms: 1000
+      reasoning_negation:
+        - type: llm_model_unavailable
+          config:
+            error_message: "Model temporarily unavailable"
+      text_reverse:
+        - type: http_latency
+          config:
+            delay_ms: 500
+      instruction_strict_format:
+        - type: timeout
+          config:
+            timeout_ms: 3000
+      error_impossible:
+        - type: model_fallback_forced
+          config:
+            fallback_model: gpt-4o-mini
+    security: false
+    timeout_ms: 90000
+
+  security:
+    runs: 1
+    faults: []
+    security: true
+    security_config:
+      tier: quick-scan
+      adaptive_deepening: false
+    attack_bundles:
+      - security_core
+      - security_tools
+    attack_limit: 12
+    timeout_ms: 120000
+
+# High-priority inputs selected for maximum vulnerability detection
+inputs:
+  # Canary tests - quick sanity checks
+  - id: canary_math
+    text: "What is 15 + 27?"
+    category: math
+    description: "Basic arithmetic - sanity check"
+    difficulty: trivial
+    failure_rate: 0.05
+    break_priority: 100
+    tags: ["canary", "baseline"]
+    goal:
+      contains: "42"
+
+  # Medium difficulty - good failure rate
+  - id: instruction_json
+    text: 'Return exactly this JSON: {"status": "ok", "count": 3}'
+    category: instruction
+    description: "JSON output formatting - common failure point"
+    difficulty: medium
+    failure_rate: 0.35
+    break_priority: 80
+    tags: ["format", "json"]
+    goal:
+      contains: '"status"'
+
+  - id: reasoning_negation
+    text: "What is NOT a primary color: red, green, or yellow? Just name one."
+    category: reasoning
+    description: "Negation understanding - trips up many agents"
+    difficulty: medium
+    failure_rate: 0.40
+    break_priority: 75
+    tags: ["reasoning", "negation"]
+    goal:
+      contains_any: ["green", "Green"]
+
+  - id: text_reverse
+    text: "Reverse the word 'hello'. Just the reversed word."
+    category: text
+    description: "Text manipulation - surprisingly common failure"
+    difficulty: medium
+    failure_rate: 0.30
+    break_priority: 70
+    tags: ["text", "manipulation"]
+    goal:
+      contains: "olleh"
+
+  # Harder tests - higher failure rates
+  - id: instruction_strict_format
+    text: "Count to 5, each number on its own line, no other text."
+    category: instruction
+    description: "Strict format compliance - most agents fail"
+    difficulty: hard
+    failure_rate: 0.55
+    break_priority: 60
+    tags: ["format", "strict"]
+    goal:
+      contains_all: ["1", "2", "3", "4", "5"]
+      max_length: 50
+
+  - id: error_impossible
+    text: "What is the capital of the fictional country 'Elbonia'?"
+    category: error_handling
+    description: "Hallucination resistance - catches confabulation"
+    difficulty: hard
+    failure_rate: 0.60
+    break_priority: 50
+    tags: ["error", "hallucination"]
+    goal:
+      not_contains: "The capital"

@@ -1,0 +1,362 @@
+# Khaos CircleCI Orb (legacy scenario runner)
+# For the GA pack-based workflow, prefer: `ci-templates/circleci-config-ga.yml`
+# Publish this as ordo-khaos/khaos orb or include inline
+#
+# Usage in .circleci/config.yml:
+#   orbs:
+#     khaos: ordo-khaos/khaos@1.0.0
+#
+#   workflows:
+#     test:
+#       jobs:
+#         - khaos/test:
+#             agent-path: my_agent
+#             reliability-threshold: 0.8
+
+version: 2.1
+
+description: |
+  Khaos - LLM Agent Chaos Engineering & Reliability Testing
+  Run chaos scenarios against your AI agents in CI/CD pipelines.
+  For documentation, see: https://khaos.ordo.dev
+
+display:
+  home_url: https://khaos.ordo.dev
+  source_url: https://github.com/ordo-khaos/khaos
+
+# Commands that can be used in custom jobs
+commands:
+  install:
+    description: Install Khaos SDK
+    parameters:
+      python-version:
+        description: Python version to use
+        type: string
+        default: "3.11"
+    steps:
+      - run:
+          name: Install uv and Khaos
+          command: |
+            pip install uv
+            uv pip install khaos-agent
+
+  run-test:
+    description: Run Khaos chaos tests
+    parameters:
+      agent-path:
+        description: Path to the agent module
+        type: string
+      scenarios:
+        description: Comma-separated scenario IDs
+        type: string
+        default: ""
+      scenario-file:
+        description: Path to scenario file or directory
+        type: string
+        default: ""
+      runs:
+        description: Number of runs per scenario
+        type: integer
+        default: 1
+      parallel:
+        description: Number of parallel workers
+        type: integer
+        default: 1
+      output-file:
+        description: Path for JSON results
+        type: string
+        default: "khaos-results.json"
+    steps:
+      - run:
+          name: Run Khaos Tests
+          command: |
+            CMD="uv run khaos run << parameters.agent-path >>"
+
+            # Add scenarios
+            if [ -n "<< parameters.scenarios >>" ]; then
+              for scenario in $(echo "<< parameters.scenarios >>" | tr ',' ' '); do
+                CMD="$CMD --scenario $scenario"
+              done
+            fi
+
+            # Add scenario file
+            if [ -n "<< parameters.scenario-file >>" ]; then
+              CMD="$CMD --scenario-file << parameters.scenario-file >>"
+            fi
+
+            CMD="$CMD --runs << parameters.runs >>"
+            CMD="$CMD --parallel << parameters.parallel >>"
+            CMD="$CMD --output json"
+            CMD="$CMD --output-file << parameters.output-file >>"
+
+            echo "Running: $CMD"
+            $CMD
+
+  check-threshold:
+    description: Check reliability threshold
+    parameters:
+      results-file:
+        description: Path to results JSON
+        type: string
+        default: "khaos-results.json"
+      threshold:
+        description: Minimum reliability score
+        type: string
+        default: "0.8"
+      fail-on-breach:
+        description: Fail if threshold not met
+        type: boolean
+        default: true
+    steps:
+      - run:
+          name: Check Reliability Threshold
+          command: |
+            if [ -f "<< parameters.results-file >>" ]; then
+              RELIABILITY=$(cat << parameters.results-file >> | python3 -c "import json,sys; print(json.load(sys.stdin).get('reliability_score', 0))")
+              echo "Reliability Score: $RELIABILITY"
+              echo "Threshold: << parameters.threshold >>"
+
+              if << parameters.fail-on-breach >>; then
+                python3 -c "exit(0 if float('$RELIABILITY') >= float('<< parameters.threshold >>') else 1)"
+              fi
+            else
+              echo "Results file not found: << parameters.results-file >>"
+              if << parameters.fail-on-breach >>; then
+                exit 1
+              fi
+            fi
+
+  gate-check:
+    description: Run Khaos gate check
+    parameters:
+      agent-path:
+        description: Path to the agent module
+        type: string
+        default: ""
+      config-file:
+        description: Path to config file
+        type: string
+        default: "khaos.yaml"
+      threshold:
+        description: Minimum reliability threshold
+        type: string
+        default: "0.8"
+    steps:
+      - run:
+          name: Khaos Gate Check
+          command: |
+            CMD="uv run khaos gate-check"
+
+            if [ -n "<< parameters.agent-path >>" ]; then
+              CMD="$CMD << parameters.agent-path >>"
+            fi
+
+            if [ -f "<< parameters.config-file >>" ]; then
+              CMD="$CMD --config << parameters.config-file >>"
+            fi
+
+            CMD="$CMD --reliability-threshold << parameters.threshold >>"
+
+            echo "Running: $CMD"
+            $CMD
+
+  sync-results:
+    description: Sync results to Khaos Cloud
+    parameters:
+      results-file:
+        description: Path to results JSON
+        type: string
+        default: "khaos-results.json"
+    steps:
+      - run:
+          name: Sync to Khaos Cloud
+          command: |
+            if [ -n "$KHAOS_API_TOKEN" ] && [ -f "<< parameters.results-file >>" ]; then
+              uv run khaos sync --file << parameters.results-file >> || true
+            else
+              echo "Skipping sync (no token or no results file)"
+            fi
+
+# Executors
+executors:
+  default:
+    description: Default Python executor for Khaos
+    parameters:
+      python-version:
+        description: Python version
+        type: string
+        default: "3.11"
+    docker:
+      - image: cimg/python:<< parameters.python-version >>
+    resource_class: medium
+    environment:
+      UV_CACHE_DIR: .uv-cache
+
+# Jobs
+jobs:
+  test:
+    description: Run Khaos chaos tests
+    parameters:
+      python-version:
+        description: Python version
+        type: string
+        default: "3.11"
+      agent-path:
+        description: Path to the agent module
+        type: string
+      scenarios:
+        description: Comma-separated scenario IDs
+        type: string
+        default: ""
+      scenario-file:
+        description: Path to scenario file or directory
+        type: string
+        default: ""
+      runs:
+        description: Number of runs per scenario
+        type: integer
+        default: 1
+      parallel:
+        description: Number of parallel workers
+        type: integer
+        default: 1
+      reliability-threshold:
+        description: Minimum reliability score
+        type: string
+        default: "0.8"
+      fail-on-breach:
+        description: Fail if threshold not met
+        type: boolean
+        default: true
+      sync-to-cloud:
+        description: Sync results to Khaos Cloud
+        type: boolean
+        default: true
+    executor:
+      name: default
+      python-version: << parameters.python-version >>
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - khaos-v1-{{ checksum "requirements.txt" }}
+            - khaos-v1-
+      - install:
+          python-version: << parameters.python-version >>
+      - run-test:
+          agent-path: << parameters.agent-path >>
+          scenarios: << parameters.scenarios >>
+          scenario-file: << parameters.scenario-file >>
+          runs: << parameters.runs >>
+          parallel: << parameters.parallel >>
+      - check-threshold:
+          threshold: << parameters.reliability-threshold >>
+          fail-on-breach: << parameters.fail-on-breach >>
+      - when:
+          condition: << parameters.sync-to-cloud >>
+          steps:
+            - sync-results
+      - save_cache:
+          key: khaos-v1-{{ checksum "requirements.txt" }}
+          paths:
+            - .uv-cache
+            - .khaos/cache
+      - store_artifacts:
+          path: khaos-results.json
+          destination: khaos-results
+      - store_artifacts:
+          path: .khaos/
+          destination: khaos-data
+
+  gate:
+    description: Run Khaos gate check
+    parameters:
+      python-version:
+        description: Python version
+        type: string
+        default: "3.11"
+      agent-path:
+        description: Path to the agent module
+        type: string
+        default: ""
+      config-file:
+        description: Path to config file
+        type: string
+        default: "khaos.yaml"
+      reliability-threshold:
+        description: Minimum reliability threshold
+        type: string
+        default: "0.8"
+    executor:
+      name: default
+      python-version: << parameters.python-version >>
+    steps:
+      - checkout
+      - install:
+          python-version: << parameters.python-version >>
+      - gate-check:
+          agent-path: << parameters.agent-path >>
+          config-file: << parameters.config-file >>
+          threshold: << parameters.reliability-threshold >>
+
+  lint:
+    description: Lint Khaos scenarios
+    parameters:
+      python-version:
+        description: Python version
+        type: string
+        default: "3.11"
+      scenario-path:
+        description: Path to scenarios
+        type: string
+        default: "scenarios/"
+    executor:
+      name: default
+      python-version: << parameters.python-version >>
+    steps:
+      - checkout
+      - install:
+          python-version: << parameters.python-version >>
+      - run:
+          name: Lint Scenarios
+          command: uv run khaos scenario-lint << parameters.scenario-path >>
+
+# Example usage
+examples:
+  basic-test:
+    description: Basic Khaos test workflow
+    usage:
+      version: 2.1
+      orbs:
+        khaos: ordo-khaos/khaos@1.0.0
+      workflows:
+        test:
+          jobs:
+            - khaos/test:
+                agent-path: my_agent
+                reliability-threshold: "0.8"
+
+  full-workflow:
+    description: Complete CI/CD workflow with lint, test, and gate
+    usage:
+      version: 2.1
+      orbs:
+        khaos: ordo-khaos/khaos@1.0.0
+      workflows:
+        chaos-engineering:
+          jobs:
+            - khaos/lint:
+                scenario-path: scenarios/
+            - khaos/test:
+                agent-path: my_agent
+                scenarios: "latency,timeout,error"
+                runs: 3
+                reliability-threshold: "0.85"
+                requires:
+                  - khaos/lint
+            - khaos/gate:
+                requires:
+                  - khaos/test
+                filters:
+                  branches:
+                    only: main

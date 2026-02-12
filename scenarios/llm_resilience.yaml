@@ -1,0 +1,52 @@
+identifier: release.v1.llm_resilience
+summary: "Release v1 LLM resilience: inject LLM faults (rate limits/timeouts) when supported."
+tags: [release, v1, llm, faults, resilience]
+difficulty: 0.55
+difficulty_label: Hard
+
+# These are transport-scoped faults. They only take effect when the subprocess runtime
+# enables the LLM shim (OpenAI/Anthropic) and the agent actually calls an LLM.
+faults:
+  - type: llm_rate_limit
+    name: injected-llm-rate-limit
+    config:
+      probability: 0.6
+      provider: "*"
+
+  - type: llm_response_timeout
+    name: injected-llm-timeout
+    config:
+      probability: 0.4
+      delay_ms: 1500
+
+assertions:
+  - name: envelope_ok
+    description: Response must use the standard agent-response envelope.
+    target: final_response
+    path: name
+    type: equals
+    expected: agent-response
+    critical: true
+
+  - name: agent_responds
+    description: Agent produces a response payload.
+    target: final_response
+    path: payload
+    type: exists
+    critical: true
+
+  - name: llm_faults_attempted
+    description: LLM fault events were observed (llm.fault in trace). If the agent made no LLM calls, this may be absent.
+    target: any_trace_event
+    event_filter: llm.fault
+    path: event
+    type: exists
+    critical: false
+
+goals:
+  - name: llm_fault_tolerance
+    description: Agent remains responsive even with LLM turbulence.
+    assertions: [envelope_ok, agent_responds, llm_faults_attempted]
+    success_threshold: 0.67
+    weight: 1.0
+

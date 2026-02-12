@@ -1,0 +1,195 @@
+[project]
+name = "khaos-agent"
+version = "1.0.0"
+description = "Chaos engineering and security testing toolkit for AI agents."
+authors = [{ name = "Ordo Labs", email = "robby@exordex.com" }]
+readme = "README.md"
+license = { text = "BSL-1.1" }
+requires-python = ">=3.11"
+keywords = ["ai", "agents", "testing", "chaos-engineering", "security", "llm", "evaluation"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "License :: Other/Proprietary License",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+  "typer>=0.12.0",
+  "pyyaml>=6.0",
+  "rich>=13.7",
+  "pydantic>=2.7",
+  "httpx>=0.27",
+  # Playground (interactive debugging)
+  "websockets>=12.0",
+  # LLM providers
+  "openai>=1.0",
+  "anthropic>=0.30",
+  "google-generativeai>=0.5",
+  # Core framework
+  "langgraph>=0.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2",
+  "pytest-asyncio>=0.23",
+  "pytest-cov>=4.1",
+  "coverage>=7.5",
+  "ruff>=0.5",
+  "black>=24.4",
+  "mypy>=1.10",
+]
+frameworks = [
+  "prefect>=3.6.4",
+  "crewai>=1.6.1",
+  "autogen-agentchat>=0.7.5",
+  "apache-airflow>=3.1.5",
+  "dagster>=1.12.8",
+]
+all = [
+  "khaos[frameworks]",
+]
+
+[project.urls]
+Homepage = "https://exordex.com/khaos"
+Repository = "https://github.com/ExordexLabs/khaos-sdk"
+Changelog = "https://github.com/ExordexLabs/khaos-sdk/releases"
+
+[project.scripts]
+khaos = "khaos.cli:app"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = "-q --cov=src/khaos --cov-report=term-missing"
+filterwarnings = [
+  # Keep CI output clean; these are intentional (we test deprecated paths + vendor deprecations).
+  "ignore:@khaos_agent is deprecated, use @khaosagent instead:DeprecationWarning",
+  "ignore:Import 'DAG' directly from the airflow module is deprecated.*:DeprecationWarning",
+]
+markers = [
+  "integration: marks integration tests (run with slower/IO fixtures)",
+  "timeout: marks tests with custom timeout requirements",
+  "slow: marks longer-running scenarios",
+]
+
+[tool.coverage.run]
+source = ["src/khaos"]
+omit = [
+  # CLI entry points - tested via integration/manual
+  "src/khaos/cli/__init__.py",
+  "src/khaos/cli/__main__.py",
+  "src/khaos/cli/commands/__init__.py",
+  "src/khaos/cli/commands/run.py",
+  "src/khaos/cli/commands/ci.py",
+  "src/khaos/cli/commands/compare.py",
+  "src/khaos/cli/commands/gate.py",
+  "src/khaos/cli/commands/sync.py",
+  "src/khaos/cli/commands/scenarios.py",
+  "src/khaos/cli/commands/run_packs.py",
+  "src/khaos/cli/commands/demo.py",
+  "src/khaos/cli/commands/run_scenarios.py",
+  # CLI internal orchestration modules - integration tested via end-to-end runs
+  "src/khaos/cli/commands/discover.py",
+  "src/khaos/cli/commands/invokers.py",
+  "src/khaos/cli/commands/security_runner.py",
+  "src/khaos/cli/commands/trace_collector.py",
+  # CLI types/deprecations - used indirectly; low-value for line coverage
+  "src/khaos/cli/types.py",
+  "src/khaos/cli/deprecation.py",
+  # CLI formatting - display only
+  "src/khaos/cli/commands/formatting/*",
+  "src/khaos/cli/constants.py",
+  "src/khaos/cli/error_handler.py",
+  # CLI utils - helper functions
+  "src/khaos/cli/utils/*",
+  # Server/sidecar - POST-GA features
+  "src/khaos/server/*",
+  # Pure config/constants
+  "src/khaos/builtin_suites.py",
+  # Packs - complex integration tested manually
+  "src/khaos/packs/*",
+  # CI reporters - output formatting only
+  "src/khaos/ci/reporters/*",
+  # Legacy modules
+  "src/khaos/reliability.py",
+  # Inputs replay - complex integration
+  "src/khaos/inputs/replay.py",
+  # LLM shims - require live API mocking
+  "src/khaos/llm/shim.py",
+  "src/khaos/llm/security_shim.py",
+  # Engine runtime - complex async coordination (integration tested)
+  "src/khaos/engine/runtime.py",
+  # Transport implementations - require live connections
+  "src/khaos/transport/mcp.py",
+  "src/khaos/transport/subprocess.py",
+  # Runtime hooks - framework patching (integration tested)
+  "src/khaos/runtime_hooks.py",
+  # Cloud upload - requires live API connection
+  "src/khaos/cloud/upload.py",
+  # Cloud sync orchestration - integration tested via `khaos sync`
+  "src/khaos/cloud/syncing.py",
+  # Discovery invoker - subprocess orchestration (integration tested)
+  "src/khaos/discovery/invoker.py",
+  # LLM faults - async fault injection (integration tested)
+  "src/khaos/llm/faults.py",
+  # Discovery detector - static analysis (integration tested)
+  "src/khaos/discovery/detector.py",
+  # MCP HTTP proxy - requires live upstream MCP server
+  "src/khaos/mcp/http_proxy.py",
+  # Adaptive security runner - experimental (integration tested)
+  "src/khaos/security/adaptive_runner.py",
+  # Testing framework - integration tested via `khaos test`
+  "src/khaos/testing/__init__.py",
+  "src/khaos/testing/client.py",
+  "src/khaos/testing/runner.py",
+  "src/khaos/cli/commands/test.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+  "raise NotImplementedError",
+  "pass",
+  "@abstractmethod",
+]
+fail_under = 85
+show_missing = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.black]
+target-version = ["py311"]
+line-length = 88
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/khaos"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/khaos/**/*.py",
+  "src/khaos/**/*.yaml",
+  "README.md",
+  "LICENSE",
+]
+exclude = [
+  "docs/",
+  "tests/",
+  "examples/",
+  "scenarios/",
+  "ci-templates/",
+  "config/",
+  "benchmarks/",
+  ".github/",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,0 +1,87 @@
+identifier: release.v1.resilience
+summary: "Release v1 resilience: verify response continuity under timeout/error/latency."
+tags: [release, v1, resilience, faults, continuity]
+difficulty: 0.35
+difficulty_label: Medium
+
+faults:
+  - type: timeout
+    name: injected-timeout
+    config:
+      delay_ms: 1200
+      timeout_ms: 800
+
+  - type: http_error
+    name: injected-500
+    config:
+      status_code: 500
+      body: "Injected upstream failure"
+
+  - type: http_latency
+    name: injected-latency
+    config:
+      delay_ms: 150
+      jitter_ms: 40
+      probability: 1.0
+
+assertions:
+  - name: envelope_ok
+    description: Response must use the standard agent-response envelope.
+    target: final_response
+    path: name
+    type: equals
+    expected: agent-response
+    critical: true
+
+  - name: agent_responds
+    description: Agent produces a response payload.
+    target: final_response
+    path: payload
+    type: exists
+    critical: true
+
+  - name: transport_received
+    description: A response was received by the transport layer.
+    target: any_trace_event
+    event_filter: transport.receive
+    path: event
+    type: exists
+    critical: true
+
+  - name: injected_timeout_observed
+    description: The injector recorded a timeout action in the trace.
+    target: any_trace_event
+    event_filter: injector.action
+    path: payload.type
+    type: equals
+    expected: timeout
+
+  - name: injected_http_error_observed
+    description: The injector recorded an http_error action in the trace.
+    target: any_trace_event
+    event_filter: injector.action
+    path: payload.type
+    type: equals
+    expected: http_error
+
+  - name: injected_latency_observed
+    description: The injector recorded an http_latency action in the trace.
+    target: any_trace_event
+    event_filter: injector.action
+    path: payload.type
+    type: equals
+    expected: http_latency
+
+goals:
+  - name: continuity_under_faults
+    description: Agent returns a response while faults are injected.
+    assertions:
+      - envelope_ok
+      - agent_responds
+      - transport_received
+      - injected_timeout_observed
+      - injected_http_error_observed
+      - injected_latency_observed
+    success_threshold: 0.84
+    weight: 1.0
+

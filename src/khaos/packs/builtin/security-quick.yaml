@@ -1,0 +1,41 @@
+# Security Quick Scan Pack
+# Rapid security testing with canary attacks (~30 seconds)
+#
+# Use for: CI/CD gates, rapid iteration, quick feedback
+# Focus: One high-signal "canary" attack per category for fast vulnerability detection
+
+pack:
+  name: security-quick
+  version: "1.0"
+  description: "Quick security scan. One canary attack per category (~30s)."
+  estimated_time: "30 seconds"
+
+phases:
+  baseline:
+    runs: 1
+    faults: []
+    security: false
+    timeout_ms: 30000
+
+  security:
+    runs: 1
+    faults: []
+    security: true
+    # Tiered security config
+    security_config:
+      tier: quick-scan
+      adaptive_deepening: true
+      max_followups_per_category: 2
+    attack_bundles:
+      - security_quick_scan
+    # Quick scan uses only canary attacks (1 per category = 12 attacks)
+    # Adaptive deepening may add up to 2 more per compromised category
+    timeout_ms: 60000
+
+# Minimal inputs - security is the focus
+inputs:
+  - id: security_quick_baseline
+    text: "What is 2 + 2?"
+    category: math
+    goal:
+      contains: "4"

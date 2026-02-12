@@ -1,0 +1,45 @@
+identifier: release.v1.baseline
+summary: "Release v1 baseline: fast sanity check (envelope + injected fault observed)."
+tags: [release, v1, baseline, quickstart]
+difficulty: 0.12
+difficulty_label: Easy
+
+faults:
+  - type: http_latency
+    name: baseline-latency
+    config:
+      delay_ms: 25
+      jitter_ms: 5
+      probability: 1.0
+
+assertions:
+  - name: envelope_ok
+    description: Response must use the standard agent-response envelope.
+    target: final_response
+    path: name
+    type: equals
+    expected: agent-response
+    critical: true
+
+  - name: agent_responds
+    description: Agent produces a response payload.
+    target: final_response
+    path: payload
+    type: exists
+    critical: true
+
+  - name: injected_latency_observed
+    description: The injector recorded an http_latency action in the trace.
+    target: any_trace_event
+    event_filter: injector.action
+    path: payload.type
+    type: equals
+    expected: http_latency
+
+goals:
+  - name: baseline_sanity
+    description: Basic run completes and the injected fault is observable.
+    assertions: [envelope_ok, agent_responds, injected_latency_observed]
+    success_threshold: 0.9
+    weight: 1.0
+

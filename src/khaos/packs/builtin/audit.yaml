@@ -1,0 +1,325 @@
+# Audit Pack
+# Comprehensive security and resilience audit
+#
+# Use for: Security audits, compliance validation, deep analysis
+# Goal: Thorough evaluation with complete attack coverage
+
+pack:
+  name: audit
+  version: "1.0"
+  description: "Comprehensive security and resilience audit - full attack coverage with detailed analysis"
+  estimated_time: "15-20 minutes"
+
+phases:
+  baseline:
+    runs: 3
+    faults: []
+    security: false
+    timeout_ms: 60000
+
+  resilience:
+    runs: 2
+    # Comprehensive fault coverage
+    fault_schedule:
+      # First run faults (round 1)
+      canary_math:
+        - type: llm_response_timeout
+          config:
+            delay_ms: 100
+      canary_instruction:
+        - type: llm_rate_limit
+          config:
+            retry_after_ms: 1000
+      canary_reasoning:
+        - type: model_fallback_forced
+          config:
+            fallback_model: gpt-4o-mini
+      instruction_json:
+        - type: llm_model_unavailable
+          config:
+            error_message: "Model temporarily unavailable"
+      instruction_word_count:
+        - type: http_latency
+          config:
+            delay_ms: 500
+      reasoning_negation:
+        - type: timeout
+          config:
+            timeout_ms: 5000
+      reasoning_comparison:
+        - type: llm_response_timeout
+          config:
+            delay_ms: 300
+      text_reverse:
+        - type: llm_rate_limit
+          config:
+            retry_after_ms: 1500
+      text_uppercase:
+        - type: llm_model_unavailable
+          config:
+            error_message: "Rate limit exceeded"
+      text_count_letters:
+        - type: http_latency
+          config:
+            delay_ms: 700
+      multistep_math:
+        - type: timeout
+          config:
+            timeout_ms: 4000
+      multistep_conditional:
+        - type: model_fallback_forced
+          config:
+            fallback_model: gpt-4o-mini
+      instruction_strict_format:
+        - type: llm_response_timeout
+          config:
+            delay_ms: 500
+      reasoning_contradiction:
+        - type: llm_rate_limit
+          config:
+            retry_after_ms: 2000
+      error_impossible:
+        - type: llm_model_unavailable
+          config:
+            error_message: "Service degraded"
+      error_ambiguous:
+        - type: timeout
+          config:
+            timeout_ms: 3000
+      creative_haiku:
+        - type: http_latency
+          config:
+            delay_ms: 600
+      knowledge_geography:
+        - type: model_fallback_forced
+          config:
+            fallback_model: gpt-4o-mini
+    security: false
+    timeout_ms: 180000
+
+  security:
+    runs: 1
+    faults: []
+    security: true
+    security_config:
+      tier: full-audit
+      adaptive_deepening: true
+      max_followups_per_category: 8
+    attack_bundles:
+      - security_core
+      - security_tools
+      - security_rag
+      - security_mcp
+    timeout_ms: 300000
+
+inputs:
+  # Canary tests (quick baseline validation)
+  - id: canary_math
+    text: "What is 15 + 27?"
+    category: math
+    description: "Basic arithmetic"
+    difficulty: trivial
+    failure_rate: 0.05
+    break_priority: 100
+    tags: ["canary"]
+    goal:
+      contains: "42"
+
+  - id: canary_instruction
+    text: "List exactly 3 colors. Just the colors, nothing else."
+    category: instruction
+    description: "Simple instruction following"
+    difficulty: easy
+    failure_rate: 0.15
+    break_priority: 95
+    tags: ["canary"]
+    goal:
+      min_length: 5
+      max_length: 100
+
+  - id: canary_reasoning
+    text: "If all cats have tails, and Whiskers is a cat, does Whiskers have a tail? Answer yes or no."
+    category: reasoning
+    description: "Basic logical deduction"
+    difficulty: easy
+    failure_rate: 0.10
+    break_priority: 90
+    tags: ["canary"]
+    goal:
+      contains_any: ["yes", "Yes", "YES"]
+
+  # Instruction following tests
+  - id: instruction_json
+    text: 'Return exactly this JSON: {"status": "ok", "count": 3}'
+    category: instruction
+    description: "JSON output formatting"
+    difficulty: medium
+    failure_rate: 0.35
+    break_priority: 80
+    tags: ["format", "json"]
+    goal:
+      contains: '"status"'
+
+  - id: instruction_word_count
+    text: "Write exactly 5 words about the weather."
+    category: instruction
+    description: "Word count compliance"
+    difficulty: medium
+    failure_rate: 0.45
+    break_priority: 75
+    tags: ["format", "count"]
+    goal:
+      min_length: 10
+      max_length: 50
+
+  # Reasoning tests
+  - id: reasoning_negation
+    text: "What is NOT a primary color: red, green, or yellow? Just name one."
+    category: reasoning
+    description: "Negation understanding"
+    difficulty: medium
+    failure_rate: 0.40
+    break_priority: 75
+    tags: ["reasoning"]
+    goal:
+      contains_any: ["green", "Green"]
+
+  - id: reasoning_comparison
+    text: "Which is larger: 0.8 or 0.75? Just the number."
+    category: reasoning
+    description: "Numerical comparison"
+    difficulty: easy
+    failure_rate: 0.15
+    break_priority: 70
+    tags: ["reasoning", "math"]
+    goal:
+      contains: "0.8"
+
+  # Text manipulation tests
+  - id: text_reverse
+    text: "Reverse the word 'hello'. Just the reversed word."
+    category: text
+    description: "Text reversal"
+    difficulty: medium
+    failure_rate: 0.30
+    break_priority: 70
+    tags: ["text"]
+    goal:
+      contains: "olleh"
+
+  - id: text_uppercase
+    text: "Convert 'khaos' to uppercase. Just the result."
+    category: text
+    description: "Case conversion"
+    difficulty: easy
+    failure_rate: 0.10
+    break_priority: 65
+    tags: ["text"]
+    goal:
+      contains: "KHAOS"
+
+  - id: text_count_letters
+    text: "How many letters are in the word 'testing'? Just the number."
+    category: text
+    description: "Letter counting"
+    difficulty: medium
+    failure_rate: 0.25
+    break_priority: 60
+    tags: ["text", "counting"]
+    goal:
+      contains: "7"
+
+  # Multi-step tests
+  - id: multistep_math
+    text: "Start with 10, double it, then subtract 5. What is the result?"
+    category: multistep
+    description: "Multi-step arithmetic"
+    difficulty: medium
+    failure_rate: 0.25
+    break_priority: 65
+    tags: ["multistep"]
+    goal:
+      contains: "15"
+
+  - id: multistep_conditional
+    text: "If 5 > 3, say 'yes'. Otherwise say 'no'. Just that word."
+    category: multistep
+    description: "Conditional logic"
+    difficulty: medium
+    failure_rate: 0.20
+    break_priority: 60
+    tags: ["multistep", "conditional"]
+    goal:
+      contains_any: ["yes", "Yes", "YES"]
+
+  # Hard tests
+  - id: instruction_strict_format
+    text: "Count to 5, each number on its own line, no other text."
+    category: instruction
+    description: "Strict format compliance"
+    difficulty: hard
+    failure_rate: 0.55
+    break_priority: 55
+    tags: ["format", "strict"]
+    goal:
+      contains_all: ["1", "2", "3", "4", "5"]
+      max_length: 50
+
+  - id: reasoning_contradiction
+    text: "A box contains only red balls. Are there any blue balls in the box? Explain briefly."
+    category: reasoning
+    description: "Contradiction handling"
+    difficulty: hard
+    failure_rate: 0.45
+    break_priority: 50
+    tags: ["reasoning"]
+    goal:
+      contains_any: ["no", "No", "NO", "none", "None"]
+
+  # Error handling tests
+  - id: error_impossible
+    text: "What is the capital of the fictional country 'Elbonia'?"
+    category: error_handling
+    description: "Hallucination resistance"
+    difficulty: hard
+    failure_rate: 0.60
+    break_priority: 45
+    tags: ["error"]
+    goal:
+      not_contains: "The capital"
+
+  - id: error_ambiguous
+    text: "The bank is by the river. What kind of bank is it?"
+    category: error_handling
+    description: "Ambiguity handling"
+    difficulty: medium
+    failure_rate: 0.35
+    break_priority: 40
+    tags: ["error", "ambiguity"]
+    goal:
+      min_length: 20
+
+  # Creative tests
+  - id: creative_haiku
+    text: "Write a haiku about testing. Follow the 5-7-5 syllable pattern."
+    category: creative
+    description: "Creative constrained output"
+    difficulty: medium
+    failure_rate: 0.40
+    break_priority: 35
+    tags: ["creative"]
+    goal:
+      min_length: 10
+      max_length: 100
+
+  # Knowledge tests
+  - id: knowledge_geography
+    text: "What is the capital of France? Just the city name."
+    category: knowledge
+    description: "Basic factual knowledge"
+    difficulty: trivial
+    failure_rate: 0.05
+    break_priority: 30
+    tags: ["knowledge"]
+    goal:
+      contains_any: ["Paris", "paris"]

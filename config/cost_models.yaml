@@ -1,0 +1,138 @@
+# Rates in USD, per 1,000 tokens (derived from per-1M where applicable)
+
+- provider: openai
+  model: gpt-5
+  prompt_usd_per_1k: 0.00125
+  completion_usd_per_1k: 0.0100
+  currency: USD
+  source: "openai_pricing_2025-10"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: openai
+  model: gpt-5-mini
+  prompt_usd_per_1k: 0.00025
+  completion_usd_per_1k: 0.0020
+  currency: USD
+  source: "openai_pricing_2025-10"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: openai
+  model: gpt-5-nano
+  prompt_usd_per_1k: 0.00005
+  completion_usd_per_1k: 0.0004
+  currency: USD
+  source: "openai_pricing_2025-10"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: openai
+  model: gpt-4o
+  prompt_usd_per_1k: 0.00250
+  completion_usd_per_1k: 0.0100
+  currency: USD
+  source: "openai_pricing_2025-10"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: anthropic
+  model: claude-sonnet-4-5
+  prompt_usd_per_1k: 0.0030
+  completion_usd_per_1k: 0.0150
+  currency: USD
+  source: "anthropic_pricing_2025"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: anthropic
+  model: claude-haiku-4-5
+  prompt_usd_per_1k: 0.0010
+  completion_usd_per_1k: 0.0050
+  currency: USD
+  source: "anthropic_pricing_2025"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: anthropic
+  model: claude-opus-4-5
+  prompt_usd_per_1k: 0.0050
+  completion_usd_per_1k: 0.0250
+  currency: USD
+  source: "anthropic_pricing_2025"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: google
+  model: gemini-3-pro
+  prompt_usd_per_1k: 0.00200
+  completion_usd_per_1k: 0.01200
+  currency: USD
+  source: "gemini_api_pricing_2025-11"
+  last_verified: "2025-12-02"
+  confidence: reported
+  notes: "≤200k context window pricing"
+
+- provider: google
+  model: gemini-3-pro-longcontext
+  prompt_usd_per_1k: 0.00400
+  completion_usd_per_1k: 0.01800
+  currency: USD
+  source: "gemini_api_pricing_2025-11"
+  last_verified: "2025-12-02"
+  confidence: reported
+  notes: ">200k token context window pricing"
+
+- provider: google
+  model: gemini-2.5-flash
+  prompt_usd_per_1k: 0.00030
+  completion_usd_per_1k: 0.00250
+  currency: USD
+  source: "gemini_api_pricing_2025-08"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: mistral
+  model: mistral-small-3.1
+  prompt_usd_per_1k: 0.00010
+  completion_usd_per_1k: 0.00030
+  currency: USD
+  source: "mistral_vertex_pricing_2025"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: mistral
+  model: mistral-medium-3
+  prompt_usd_per_1k: 0.00040
+  completion_usd_per_1k: 0.00200
+  currency: USD
+  source: "mistral_vertex_pricing_2025"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: mistral
+  model: mistral-large-24.11
+  prompt_usd_per_1k: 0.00200
+  completion_usd_per_1k: 0.00600
+  currency: USD
+  source: "mistral_vertex_pricing_2025"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: cohere
+  model: command-r
+  prompt_usd_per_1k: 0.00050
+  completion_usd_per_1k: 0.00150
+  currency: USD
+  source: "cohere_pricing_2025"
+  last_verified: "2025-12-02"
+  confidence: reported
+
+- provider: cohere
+  model: command-r-plus
+  prompt_usd_per_1k: 0.00250
+  completion_usd_per_1k: 0.01000
+  currency: USD
+  source: "cohere_pricing_2025"
+  last_verified: "2025-12-02"
+  confidence: reported

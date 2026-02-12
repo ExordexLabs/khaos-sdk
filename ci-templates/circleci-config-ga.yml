@@ -1,0 +1,100 @@
+# Khaos CircleCI (GA template)
+#
+# Usage:
+# - Copy this file into your repo at `.circleci/config.yml`
+# - Set env vars in CircleCI project settings:
+#   - KHAOS_API_URL
+#   - KHAOS_API_TOKEN
+#   - KHAOS_PROJECT_SLUG
+#   - KHAOS_DASHBOARD_URL (optional)
+#
+# Also set any model/tool credentials your agent needs (e.g. OPENAI_API_KEY).
+
+version: 2.1
+
+jobs:
+  khaos-ci:
+    docker:
+      - image: cimg/python:3.11
+    environment:
+      KHAOS_CI: "1"
+      # Keep local artifacts inside the checkout directory (helps long-lived runner hygiene).
+      KHAOS_STATE_DIR: ".khaos"
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-v1-
+      - run:
+          name: Install Khaos CLI
+          command: |
+            python -m pip install --upgrade pip
+            pip install "khaos>=1.0.0,<2"
+      - run:
+          name: Run evaluation (CI gate)
+          command: |
+            khaos ci path/to/agent.py \
+              --pack quickstart \
+              --sync \
+              --exit-code-mode ga \
+              --json-file khaos-results.json \
+              --format junit \
+              --output-file khaos-results.xml
+      - run:
+          name: Export local artifacts (best-effort)
+          when: always
+          command: |
+            RUN_ID="$(python -c "import json; print(json.load(open('khaos-results.json')).get('run_id',''))" 2>/dev/null || true)"
+            if [ -n "$RUN_ID" ]; then
+              khaos export "$RUN_ID" --out "khaos-export-${RUN_ID}.json" || true
+              # Optional: cleanup local artifacts on long-lived runners (may re-upload).
+              # khaos sync --run "$RUN_ID" --cleanup || true
+            fi
+      - store_artifacts:
+          path: khaos-results.json
+          destination: khaos-results.json
+      - store_artifacts:
+          path: khaos-results.xml
+          destination: khaos-results.xml
+      - save_cache:
+          key: pip-v1
+          paths:
+            - ~/.cache/pip
+
+  khaos-test:
+    docker:
+      - image: cimg/python:3.11
+    environment:
+      KHAOS_CI: "1"
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pip-v1-
+      - run:
+          name: Install Khaos CLI
+          command: |
+            python -m pip install --upgrade pip
+            pip install "khaos>=1.0.0,<2"
+      - run:
+          name: Run @khaostest tests
+          command: |
+            khaos test \
+              --format junit \
+              --output-file khaos-test-results.xml \
+              --json-file khaos-test-results.json
+      - store_test_results:
+          path: khaos-test-results.xml
+      - store_artifacts:
+          path: khaos-test-results.xml
+          destination: khaos-test-results.xml
+      - store_artifacts:
+          path: khaos-test-results.json
+          destination: khaos-test-results.json
+
+workflows:
+  version: 2
+  khaos:
+    jobs:
+      - khaos-ci
+      - khaos-test

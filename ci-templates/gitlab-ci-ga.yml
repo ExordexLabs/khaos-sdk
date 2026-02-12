@@ -1,0 +1,106 @@
+# Khaos GitLab CI/CD (GA template)
+#
+# Usage:
+# 1) Copy this file into your repo as `.gitlab/khaos-ci.yml`
+# 2) Include it from `.gitlab-ci.yml`:
+#    include:
+#      - local: ".gitlab/khaos-ci.yml"
+#
+# Required variables (recommended as masked CI variables):
+# - KHAOS_API_URL
+# - KHAOS_API_TOKEN
+# - KHAOS_PROJECT_SLUG
+# - KHAOS_DASHBOARD_URL (optional; used for links)
+#
+# Also set any model/tool credentials your agent needs (e.g. OPENAI_API_KEY).
+
+stages: [khaos]
+
+khaos:ci:
+  stage: khaos
+  image: python:3.11
+  variables:
+    # Keep local artifacts inside the project directory (helps long-lived runner hygiene).
+    KHAOS_STATE_DIR: "$CI_PROJECT_DIR/.khaos"
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    PIP_NO_PYTHON_VERSION_WARNING: "1"
+    KHAOS_CI: "1"
+    # Default pack (overridden by rules below).
+    KHAOS_PACK: "quickstart" # also: full-eval / baseline / security
+    KHAOS_AGENT_PATH: "path/to/agent.py"
+  rules:
+    # Merge requests: quick, low-cost pack
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      variables:
+        KHAOS_PACK: "quickstart"
+    # Default branch: thorough pack
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      variables:
+        KHAOS_PACK: "full-eval"
+    - when: never
+  cache:
+    key: pip
+    paths:
+      - .cache/pip
+  before_script:
+    - python -m pip install --upgrade pip
+    - pip install "khaos>=1.0.0,<2"
+  script:
+    - |
+      khaos ci "${KHAOS_AGENT_PATH}" \
+        --pack "${KHAOS_PACK}" \
+        --sync \
+        --exit-code-mode ga \
+        --json-file khaos-results.json \
+        --format junit \
+        --output-file khaos-results.xml
+    - |
+      # Export local artifacts (best-effort)
+      RUN_ID="$(python -c "import json; print(json.load(open('khaos-results.json')).get('run_id',''))" 2>/dev/null || true)"
+      if [ -n "$RUN_ID" ]; then
+        khaos export "$RUN_ID" --out "khaos-export-${RUN_ID}.json" || true
+        # Optional: cleanup local artifacts on long-lived runners (may re-upload).
+        # khaos sync --run "$RUN_ID" --cleanup || true
+      fi
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - khaos-results.json
+      - khaos-results.xml
+      - khaos-export-*.json
+
+khaos:test:
+  stage: khaos
+  image: python:3.11
+  variables:
+    KHAOS_CI: "1"
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    PIP_NO_PYTHON_VERSION_WARNING: "1"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - when: never
+  cache:
+    key: pip
+    paths:
+      - .cache/pip
+  before_script:
+    - python -m pip install --upgrade pip
+    - pip install "khaos>=1.0.0,<2"
+  script:
+    - |
+      khaos test \
+        --format junit \
+        --output-file khaos-test-results.xml \
+        --json-file khaos-test-results.json
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - khaos-test-results.xml
+      - khaos-test-results.json
+    reports:
+      junit: khaos-test-results.xml

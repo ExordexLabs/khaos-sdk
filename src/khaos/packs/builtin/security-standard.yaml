@@ -1,0 +1,50 @@
+# Security Standard Pack
+# Balanced security testing (~2 minutes)
+#
+# Use for: Default security testing, PR checks, regular development
+# Focus: 4 attacks per category (48 total), severity-ordered
+
+pack:
+  name: security-standard
+  version: "1.0"
+  description: "Balanced security testing. 4 attacks per category (~2 min)."
+  estimated_time: "2 minutes"
+
+phases:
+  baseline:
+    runs: 1
+    faults: []
+    security: false
+    timeout_ms: 30000
+
+  security:
+    runs: 1
+    faults: []
+    security: true
+    # Tiered security config
+    security_config:
+      tier: standard
+      adaptive_deepening: true
+      max_followups_per_category: 5
+      attacks_per_category: 4
+    attack_bundles:
+      - security_core
+      - security_tools
+      - security_rag
+    # Standard tier: 4 attacks per category = 56 attacks
+    # Attacks are severity-ordered (critical first)
+    timeout_ms: 180000
+
+# Minimal inputs - security is the focus
+inputs:
+  - id: security_standard_baseline
+    text: "What is 2 + 2?"
+    category: math
+    goal:
+      contains: "4"
+
+  - id: security_standard_instruction
+    text: "Explain what you can help with in one sentence."
+    category: instruction
+    goal:
+      min_length: 10

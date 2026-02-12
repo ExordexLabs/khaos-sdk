@@ -1,0 +1,164 @@
+# Canonical Inputs for Cross-Agent Comparison
+# Version: 1.0
+#
+# These inputs are carefully designed to:
+# 1. Be answerable by any general-purpose agent
+# 2. Have objectively verifiable outputs
+# 3. Cover a range of capabilities
+# 4. Be domain-agnostic
+#
+# DO NOT MODIFY - changing these breaks cross-agent comparison
+
+inputs:
+  # ==========================================================================
+  # BASIC MATH (verifiable, deterministic)
+  # ==========================================================================
+  - id: math_simple
+    text: "What is 15 + 27?"
+    category: math
+    description: "Simple arithmetic"
+    goal:
+      contains: "42"
+
+  - id: math_multiplication
+    text: "Calculate 12 times 8."
+    category: math
+    description: "Basic multiplication"
+    goal:
+      contains: "96"
+
+  # ==========================================================================
+  # INSTRUCTION FOLLOWING (tests compliance)
+  # ==========================================================================
+  - id: instruction_list_3
+    text: "List exactly 3 colors. Just the colors, nothing else."
+    category: instruction
+    description: "Precise list generation"
+    goal:
+      min_length: 5
+      max_length: 100
+
+  - id: instruction_word_count
+    text: "Respond with exactly 5 words."
+    category: instruction
+    description: "Word count constraint"
+    goal:
+      min_length: 10
+      max_length: 50
+
+  - id: instruction_format_json
+    text: "Return a JSON object with keys 'name' and 'age'. Use 'Alice' and 30."
+    category: instruction
+    description: "JSON formatting"
+    goal:
+      contains_all: ["name", "age", "Alice", "30"]
+
+  # ==========================================================================
+  # REASONING (tests logical thinking)
+  # ==========================================================================
+  - id: reasoning_logic
+    text: "If all cats have tails, and Whiskers is a cat, does Whiskers have a tail? Answer yes or no."
+    category: reasoning
+    description: "Basic syllogism"
+    goal:
+      contains_any: ["yes", "Yes", "YES"]
+
+  - id: reasoning_negation
+    text: "Is the following statement true or false: 'A triangle has four sides.' Answer only true or false."
+    category: reasoning
+    description: "Negation understanding"
+    goal:
+      contains_any: ["false", "False", "FALSE"]
+
+  - id: reasoning_comparison
+    text: "Which is larger: 0.9 or 0.85? Just give the number."
+    category: reasoning
+    description: "Numerical comparison"
+    goal:
+      contains: "0.9"
+
+  # ==========================================================================
+  # TEXT MANIPULATION (tests language capabilities)
+  # ==========================================================================
+  - id: text_reverse
+    text: "Reverse the word 'hello'. Just give the reversed word."
+    category: text
+    description: "String reversal"
+    goal:
+      contains: "olleh"
+
+  - id: text_uppercase
+    text: "Convert 'khaos' to uppercase. Just the result."
+    category: text
+    description: "Case conversion"
+    goal:
+      contains: "KHAOS"
+
+  - id: text_count_letters
+    text: "How many letters are in the word 'programming'? Just the number."
+    category: text
+    description: "Character counting"
+    goal:
+      contains: "11"
+
+  # ==========================================================================
+  # KNOWLEDGE (tests basic world knowledge)
+  # ==========================================================================
+  - id: knowledge_capital
+    text: "What is the capital of France? Just the city name."
+    category: knowledge
+    description: "Basic geography"
+    goal:
+      contains_any: ["Paris", "paris"]
+
+  - id: knowledge_planet
+    text: "How many planets are in our solar system? Just the number."
+    category: knowledge
+    description: "Basic astronomy"
+    goal:
+      contains: "8"
+
+  # ==========================================================================
+  # ERROR HANDLING (tests robustness)
+  # ==========================================================================
+  - id: error_impossible
+    text: "What is the square root of negative one in real numbers?"
+    category: error
+    description: "Handling impossible queries"
+    goal:
+      contains_any: ["undefined", "not possible", "imaginary", "does not exist", "no real", "cannot"]
+
+  - id: error_ambiguous
+    text: "Explain 'it' briefly."
+    category: error
+    description: "Handling ambiguous input"
+    goal:
+      min_length: 20  # Should ask for clarification or provide context
+
+  # ==========================================================================
+  # CREATIVE (tests generation, less strict)
+  # ==========================================================================
+  - id: creative_haiku
+    text: "Write a haiku about technology. Just the haiku."
+    category: creative
+    description: "Creative generation"
+    goal:
+      min_length: 20
+      max_length: 200
+
+  # ==========================================================================
+  # MULTI-STEP (tests complex instruction)
+  # ==========================================================================
+  - id: multistep_sequence
+    text: "Start with 5, add 3, then multiply by 2. What is the result?"
+    category: multistep
+    description: "Sequential operations"
+    goal:
+      contains: "16"
+
+  - id: multistep_conditional
+    text: "If 10 is greater than 5, say 'yes'. Otherwise say 'no'. Just one word."
+    category: multistep
+    description: "Conditional logic"
+    goal:
+      contains_any: ["yes", "Yes"]

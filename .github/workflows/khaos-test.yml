@@ -1,0 +1,215 @@
+# Reusable Khaos Test Workflow
+# Users can call this from their repos to run Khaos chaos tests
+name: Khaos Test
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        required: false
+        default: '3.11'
+        type: string
+      agent-path:
+        description: 'Path to the agent to test'
+        required: true
+        type: string
+      scenarios:
+        description: 'Comma-separated list of scenario IDs to run'
+        required: false
+        default: ''
+        type: string
+      scenario-file:
+        description: 'Path to scenario file or directory'
+        required: false
+        default: ''
+        type: string
+      config-file:
+        description: 'Path to Khaos config file'
+        required: false
+        default: 'khaos.yaml'
+        type: string
+      fail-on:
+        description: 'When to fail: "any", "critical", "none"'
+        required: false
+        default: 'critical'
+        type: string
+      reliability-threshold:
+        description: 'Minimum reliability score (0.0-1.0)'
+        required: false
+        default: '0.8'
+        type: string
+      runs:
+        description: 'Number of runs per scenario'
+        required: false
+        default: '1'
+        type: string
+      parallel:
+        description: 'Number of parallel workers'
+        required: false
+        default: '1'
+        type: string
+      upload-results:
+        description: 'Upload results as artifacts'
+        required: false
+        default: 'true'
+        type: string
+    secrets:
+      KHAOS_API_TOKEN:
+        description: 'Khaos Cloud API token for result sync'
+        required: false
+      OPENAI_API_KEY:
+        description: 'OpenAI API key for LLM-based evaluation'
+        required: false
+      ANTHROPIC_API_KEY:
+        description: 'Anthropic API key for LLM-based evaluation'
+        required: false
+    outputs:
+      reliability-score:
+        description: 'Overall reliability score'
+        value: ${{ jobs.test.outputs.reliability-score }}
+      passed:
+        description: 'Whether all tests passed'
+        value: ${{ jobs.test.outputs.passed }}
+      results-path:
+        description: 'Path to results file'
+        value: ${{ jobs.test.outputs.results-path }}
+
+jobs:
+  test:
+    name: Run Khaos Tests
+    runs-on: ubuntu-latest
+    outputs:
+      reliability-score: ${{ steps.run.outputs.reliability-score }}
+      passed: ${{ steps.run.outputs.passed }}
+      results-path: ${{ steps.run.outputs.results-path }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install ${{ inputs.python-version }}
+
+      - name: Install Khaos
+        run: uv pip install khaos-agent
+
+      - name: Validate configuration
+        run: |
+          if [ -f "${{ inputs.config-file }}" ]; then
+            echo "Using config file: ${{ inputs.config-file }}"
+          else
+            echo "No config file found, using defaults"
+          fi
+
+      - name: Run Khaos tests
+        id: run
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          KHAOS_API_TOKEN: ${{ secrets.KHAOS_API_TOKEN }}
+        run: |
+          set +e
+
+          # Build command
+          CMD="uv run khaos run ${{ inputs.agent-path }}"
+
+          # Add scenarios
+          if [ -n "${{ inputs.scenarios }}" ]; then
+            for scenario in $(echo "${{ inputs.scenarios }}" | tr ',' ' '); do
+              CMD="$CMD --scenario $scenario"
+            done
+          fi
+
+          # Add scenario file/directory
+          if [ -n "${{ inputs.scenario-file }}" ]; then
+            CMD="$CMD --scenario-file ${{ inputs.scenario-file }}"
+          fi
+
+          # Add options
+          CMD="$CMD --runs ${{ inputs.runs }}"
+          CMD="$CMD --parallel ${{ inputs.parallel }}"
+          CMD="$CMD --output json"
+          CMD="$CMD --output-file khaos-results.json"
+
+          echo "Running: $CMD"
+          $CMD
+          EXIT_CODE=$?
+
+          # Parse results
+          if [ -f "khaos-results.json" ]; then
+            RELIABILITY=$(cat khaos-results.json | jq -r '.reliability_score // 0')
+            echo "reliability-score=$RELIABILITY" >> $GITHUB_OUTPUT
+            echo "results-path=khaos-results.json" >> $GITHUB_OUTPUT
+
+            # Check threshold
+            THRESHOLD=${{ inputs.reliability-threshold }}
+            if (( $(echo "$RELIABILITY >= $THRESHOLD" | bc -l) )); then
+              echo "passed=true" >> $GITHUB_OUTPUT
+            else
+              echo "passed=false" >> $GITHUB_OUTPUT
+              if [ "${{ inputs.fail-on }}" != "none" ]; then
+                EXIT_CODE=1
+              fi
+            fi
+          else
+            echo "reliability-score=0" >> $GITHUB_OUTPUT
+            echo "passed=false" >> $GITHUB_OUTPUT
+            echo "results-path=" >> $GITHUB_OUTPUT
+          fi
+
+          exit $EXIT_CODE
+
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "## Khaos Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "khaos-results.json" ]; then
+            RELIABILITY=$(cat khaos-results.json | jq -r '.reliability_score // 0')
+            TOTAL=$(cat khaos-results.json | jq -r '.total_runs // 0')
+            PASSED=$(cat khaos-results.json | jq -r '.passed_runs // 0')
+            FAILED=$(cat khaos-results.json | jq -r '.failed_runs // 0')
+
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Reliability Score | **${RELIABILITY}** |" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Runs | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+
+            if [ "${{ steps.run.outputs.passed }}" == "true" ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo ":white_check_mark: **All reliability thresholds met**" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo ":x: **Reliability below threshold (${{ inputs.reliability-threshold }})**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo ":warning: No results file generated" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload results
+        if: inputs.upload-results == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: khaos-results
+          path: |
+            khaos-results.json
+            .khaos/
+          if-no-files-found: ignore
+
+      - name: Sync to Khaos Cloud
+        if: env.KHAOS_API_TOKEN != '' && always()
+        env:
+          KHAOS_API_TOKEN: ${{ secrets.KHAOS_API_TOKEN }}
+        run: |
+          if [ -f "khaos-results.json" ]; then
+            uv run khaos sync --file khaos-results.json || true
+          fi

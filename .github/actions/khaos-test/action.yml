@@ -1,0 +1,251 @@
+name: 'Khaos Agent Test'
+description: 'Run chaos engineering tests on your AI agent with security, resilience, and regression detection'
+author: 'Exordex'
+
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  agent:
+    description: 'Path to agent script (e.g., agent.py, src/my_agent.py)'
+    required: true
+  pack:
+    description: 'Evaluation pack to run (baseline, quickstart, full-eval, security)'
+    required: false
+    default: 'quickstart'
+  security-threshold:
+    description: 'Minimum security score (0-100) to pass'
+    required: false
+    default: '80'
+  resilience-threshold:
+    description: 'Minimum resilience score (0-100) to pass'
+    required: false
+    default: '70'
+  baseline:
+    description: 'Baseline name to compare against for regression detection'
+    required: false
+    default: ''
+  save-baseline:
+    description: 'Save this run as a named baseline'
+    required: false
+    default: ''
+  fail-on-regression:
+    description: 'Exit non-zero if regression detected vs baseline'
+    required: false
+    default: 'false'
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.11'
+  environment:
+    description: 'Environment variables to pass to agent (newline-separated KEY=VALUE)'
+    required: false
+    default: ''
+  timeout:
+    description: 'Maximum execution time in seconds'
+    required: false
+    default: '300'
+  run-khaostests:
+    description: 'Also run @khaostest-decorated tests and include results in output'
+    required: false
+    default: 'false'
+  test-path:
+    description: 'Paths to search for @khaostest tests (only used when run-khaostests is true)'
+    required: false
+    default: ''
+
+outputs:
+  security-score:
+    description: 'Security score (0-100)'
+    value: ${{ steps.run.outputs.security-score }}
+  resilience-score:
+    description: 'Resilience score (0-100)'
+    value: ${{ steps.run.outputs.resilience-score }}
+  overall-score:
+    description: 'Overall evaluation score (0-100)'
+    value: ${{ steps.run.outputs.overall-score }}
+  passed:
+    description: 'Whether all thresholds passed (true/false)'
+    value: ${{ steps.run.outputs.passed }}
+  run-id:
+    description: 'Khaos run ID for this evaluation'
+    value: ${{ steps.run.outputs.run-id }}
+  regression-detected:
+    description: 'Whether regression was detected vs baseline (true/false)'
+    value: ${{ steps.run.outputs.regression-detected }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
+
+    - name: Install Khaos
+      shell: bash
+      run: |
+        uv pip install --system khaos
+
+    - name: Run Khaos CI
+      id: run
+      shell: bash
+      env:
+        KHAOS_CI: 'true'
+      run: |
+        set +e
+
+        # Build command
+        CMD="khaos ci '${{ inputs.agent }}'"
+        CMD="$CMD --pack ${{ inputs.pack }}"
+        CMD="$CMD --security-threshold ${{ inputs.security-threshold }}"
+        CMD="$CMD --resilience-threshold ${{ inputs.resilience-threshold }}"
+        CMD="$CMD --timeout ${{ inputs.timeout }}"
+        CMD="$CMD --format junit"
+        CMD="$CMD --output-file khaos-results.xml"
+        CMD="$CMD --json-file khaos-results.json"
+
+        # Add baseline comparison if specified
+        if [ -n "${{ inputs.baseline }}" ]; then
+          CMD="$CMD --baseline '${{ inputs.baseline }}'"
+        fi
+
+        # Add save-baseline if specified
+        if [ -n "${{ inputs.save-baseline }}" ]; then
+          CMD="$CMD --save-baseline '${{ inputs.save-baseline }}'"
+        fi
+
+        # Add fail-on-regression if enabled
+        if [ "${{ inputs.fail-on-regression }}" == "true" ]; then
+          CMD="$CMD --fail-on-regression"
+        fi
+
+        # Add @khaostest integration if enabled
+        if [ "${{ inputs.run-khaostests }}" == "true" ]; then
+          CMD="$CMD --test"
+          if [ -n "${{ inputs.test-path }}" ]; then
+            CMD="$CMD --test-path '${{ inputs.test-path }}'"
+          fi
+        fi
+
+        # Add environment variables
+        ENV_ARGS=""
+        if [ -n "${{ inputs.environment }}" ]; then
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              ENV_ARGS="$ENV_ARGS --env '$line'"
+            fi
+          done <<< "${{ inputs.environment }}"
+        fi
+        CMD="$CMD $ENV_ARGS"
+
+        echo "Running: $CMD"
+        eval $CMD
+        EXIT_CODE=$?
+
+        # Parse results for outputs
+        if [ -f "khaos-results.json" ]; then
+          SECURITY=$(jq -r '.security_score // 0' khaos-results.json)
+          RESILIENCE=$(jq -r '.resilience_score // 0' khaos-results.json)
+          OVERALL=$(jq -r '.overall_score // 0' khaos-results.json)
+          RUN_ID=$(jq -r '.run_id // ""' khaos-results.json)
+          REGRESSION=$(jq -r '.regression_detected // false' khaos-results.json)
+
+          echo "security-score=$SECURITY" >> $GITHUB_OUTPUT
+          echo "resilience-score=$RESILIENCE" >> $GITHUB_OUTPUT
+          echo "overall-score=$OVERALL" >> $GITHUB_OUTPUT
+          echo "run-id=$RUN_ID" >> $GITHUB_OUTPUT
+          echo "regression-detected=$REGRESSION" >> $GITHUB_OUTPUT
+
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "passed=false" >> $GITHUB_OUTPUT
+          fi
+        fi
+
+        exit $EXIT_CODE
+
+    - name: Generate Step Summary
+      if: always()
+      shell: bash
+      run: |
+        echo "## Khaos Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ -f "khaos-results.json" ]; then
+          SECURITY=$(jq -r '.security_score // "N/A"' khaos-results.json)
+          RESILIENCE=$(jq -r '.resilience_score // "N/A"' khaos-results.json)
+          OVERALL=$(jq -r '.overall_score // "N/A"' khaos-results.json)
+          PACK=$(jq -r '.pack_name // "unknown"' khaos-results.json)
+          RUN_ID=$(jq -r '.run_id // ""' khaos-results.json)
+
+          echo "**Pack:** $PACK | **Run ID:** \`$RUN_ID\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Score | Threshold | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          # Security row
+          if [ "$SECURITY" != "null" ] && [ "$SECURITY" != "N/A" ]; then
+            SEC_STATUS=$(echo "$SECURITY >= ${{ inputs.security-threshold }}" | bc -l 2>/dev/null || echo "0")
+            if [ "$SEC_STATUS" == "1" ]; then
+              echo "| Security | $SECURITY | ${{ inputs.security-threshold }} | :white_check_mark: |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| Security | $SECURITY | ${{ inputs.security-threshold }} | :x: |" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          # Resilience row
+          if [ "$RESILIENCE" != "null" ] && [ "$RESILIENCE" != "N/A" ]; then
+            RES_STATUS=$(echo "$RESILIENCE >= ${{ inputs.resilience-threshold }}" | bc -l 2>/dev/null || echo "0")
+            if [ "$RES_STATUS" == "1" ]; then
+              echo "| Resilience | $RESILIENCE | ${{ inputs.resilience-threshold }} | :white_check_mark: |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| Resilience | $RESILIENCE | ${{ inputs.resilience-threshold }} | :x: |" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          echo "| **Overall** | **$OVERALL** | - | - |" >> $GITHUB_STEP_SUMMARY
+
+          # Verdict
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.run.outputs.passed }}" == "true" ]; then
+            echo ":white_check_mark: **All thresholds passed**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":x: **Threshold check failed**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Regression info
+          if [ "${{ steps.run.outputs.regression-detected }}" == "true" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo ":warning: **Regression detected vs baseline**" >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo ":x: **No results file found**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Upload JUnit Report
+      if: always()
+      uses: mikepenz/action-junit-report@v4
+      with:
+        report_paths: 'khaos-results.xml'
+        fail_on_failure: false
+        include_passed: true
+        check_name: 'Khaos Test Results'
+
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: khaos-results
+        path: |
+          khaos-results.xml
+          khaos-results.json
+        if-no-files-found: ignore
+        retention-days: 30

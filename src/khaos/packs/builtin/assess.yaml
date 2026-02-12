@@ -1,0 +1,228 @@
+# Assess Pack
+# Pre-release readiness assessment - balanced coverage
+#
+# Use for: Pre-deployment validation, CI/CD integration
+# Goal: Comprehensive baseline before production release
+
+pack:
+  name: assess
+  version: "1.0"
+  description: "Pre-release readiness assessment - balanced coverage across all evaluation dimensions"
+  estimated_time: "8-10 minutes"
+
+phases:
+  baseline:
+    runs: 3  # 3 repeats for consistency metrics
+    faults: []
+    security: false
+    timeout_ms: 60000
+
+  resilience:
+    runs: 1
+    fault_schedule:
+      # Canary tests
+      canary_math:
+        - type: llm_response_timeout
+          config:
+            delay_ms: 100
+      canary_instruction:
+        - type: llm_rate_limit
+          config:
+            retry_after_ms: 1000
+      canary_reasoning:
+        - type: model_fallback_forced
+          config:
+            fallback_model: gpt-4o-mini
+      # Medium tests
+      instruction_json:
+        - type: llm_model_unavailable
+          config:
+            error_message: "Model temporarily unavailable"
+      reasoning_negation:
+        - type: http_latency
+          config:
+            delay_ms: 500
+      text_reverse:
+        - type: timeout
+          config:
+            timeout_ms: 5000
+      multistep_math:
+        - type: llm_response_timeout
+          config:
+            delay_ms: 200
+      # Hard tests
+      instruction_strict_format:
+        - type: llm_rate_limit
+          config:
+            retry_after_ms: 2000
+      reasoning_contradiction:
+        - type: llm_model_unavailable
+          config:
+            error_message: "Service degraded"
+      error_impossible:
+        - type: timeout
+          config:
+            timeout_ms: 3000
+      error_ambiguous:
+        - type: http_latency
+          config:
+            delay_ms: 800
+      creative_haiku:
+        - type: model_fallback_forced
+          config:
+            fallback_model: gpt-4o-mini
+    security: false
+    timeout_ms: 120000
+
+  security:
+    runs: 1
+    faults: []
+    security: true
+    security_config:
+      tier: standard
+      adaptive_deepening: true
+      attacks_per_category: 4
+    attack_bundles:
+      - security_core
+      - security_tools
+      - security_rag
+    timeout_ms: 180000
+
+inputs:
+  # Canary tests (quick baseline)
+  - id: canary_math
+    text: "What is 15 + 27?"
+    category: math
+    description: "Basic arithmetic"
+    difficulty: trivial
+    failure_rate: 0.05
+    break_priority: 100
+    tags: ["canary"]
+    goal:
+      contains: "42"
+
+  - id: canary_instruction
+    text: "List exactly 3 colors. Just the colors, nothing else."
+    category: instruction
+    description: "Simple instruction following"
+    difficulty: easy
+    failure_rate: 0.15
+    break_priority: 95
+    tags: ["canary"]
+    goal:
+      min_length: 5
+      max_length: 100
+
+  - id: canary_reasoning
+    text: "If all cats have tails, and Whiskers is a cat, does Whiskers have a tail? Answer yes or no."
+    category: reasoning
+    description: "Basic logical deduction"
+    difficulty: easy
+    failure_rate: 0.10
+    break_priority: 90
+    tags: ["canary"]
+    goal:
+      contains_any: ["yes", "Yes", "YES"]
+
+  # Medium difficulty (core coverage)
+  - id: instruction_json
+    text: 'Return exactly this JSON: {"status": "ok", "count": 3}'
+    category: instruction
+    description: "JSON output formatting"
+    difficulty: medium
+    failure_rate: 0.35
+    break_priority: 80
+    tags: ["format", "json"]
+    goal:
+      contains: '"status"'
+
+  - id: reasoning_negation
+    text: "What is NOT a primary color: red, green, or yellow? Just name one."
+    category: reasoning
+    description: "Negation understanding"
+    difficulty: medium
+    failure_rate: 0.40
+    break_priority: 75
+    tags: ["reasoning"]
+    goal:
+      contains_any: ["green", "Green"]
+
+  - id: text_reverse
+    text: "Reverse the word 'hello'. Just the reversed word."
+    category: text
+    description: "Text manipulation"
+    difficulty: medium
+    failure_rate: 0.30
+    break_priority: 70
+    tags: ["text"]
+    goal:
+      contains: "olleh"
+
+  - id: multistep_math
+    text: "Start with 10, double it, then subtract 5. What is the result?"
+    category: multistep
+    description: "Multi-step arithmetic"
+    difficulty: medium
+    failure_rate: 0.25
+    break_priority: 65
+    tags: ["multistep"]
+    goal:
+      contains: "15"
+
+  # Hard tests (stress testing)
+  - id: instruction_strict_format
+    text: "Count to 5, each number on its own line, no other text."
+    category: instruction
+    description: "Strict format compliance"
+    difficulty: hard
+    failure_rate: 0.55
+    break_priority: 60
+    tags: ["format", "strict"]
+    goal:
+      contains_all: ["1", "2", "3", "4", "5"]
+      max_length: 50
+
+  - id: reasoning_contradiction
+    text: "A box contains only red balls. Are there any blue balls in the box? Explain briefly."
+    category: reasoning
+    description: "Contradiction handling"
+    difficulty: hard
+    failure_rate: 0.45
+    break_priority: 55
+    tags: ["reasoning"]
+    goal:
+      contains_any: ["no", "No", "NO", "none", "None"]
+
+  - id: error_impossible
+    text: "What is the capital of the fictional country 'Elbonia'?"
+    category: error_handling
+    description: "Hallucination resistance"
+    difficulty: hard
+    failure_rate: 0.60
+    break_priority: 50
+    tags: ["error"]
+    goal:
+      not_contains: "The capital"
+
+  - id: error_ambiguous
+    text: "The bank is by the river. What kind of bank is it?"
+    category: error_handling
+    description: "Ambiguity handling"
+    difficulty: medium
+    failure_rate: 0.35
+    break_priority: 45
+    tags: ["error", "ambiguity"]
+    goal:
+      min_length: 20
+
+  - id: creative_haiku
+    text: "Write a haiku about testing. Follow the 5-7-5 syllable pattern."
+    category: creative
+    description: "Creative constrained output"
+    difficulty: medium
+    failure_rate: 0.40
+    break_priority: 40
+    tags: ["creative"]
+    goal:
+      min_length: 10
+      max_length: 100

@@ -1,0 +1,144 @@
+# Khaos GitLab CI/CD Template (legacy scenario runner)
+# For the GA pack-based workflow, prefer: `ci-templates/gitlab-ci-ga.yml`
+# Include this in your .gitlab-ci.yml:
+#   include:
+#     - remote: 'https://raw.githubusercontent.com/ordo-khaos/khaos/main/ci-templates/gitlab-ci.yml'
+#
+# Or copy this file into your project and include locally:
+#   include:
+#     - local: '.gitlab/khaos-ci.yml'
+
+variables:
+  PYTHON_VERSION: "3.11"
+  KHAOS_AGENT_PATH: ""
+  KHAOS_SCENARIOS: ""
+  KHAOS_SCENARIO_FILE: ""
+  KHAOS_CONFIG_FILE: "khaos.yaml"
+  KHAOS_FAIL_ON: "critical"
+  KHAOS_RELIABILITY_THRESHOLD: "0.8"
+  KHAOS_RUNS: "1"
+  KHAOS_PARALLEL: "1"
+
+.khaos_base:
+  image: python:${PYTHON_VERSION}
+  before_script:
+    - pip install uv
+    - uv pip install khaos-agent
+  artifacts:
+    paths:
+      - khaos-results.json
+      - .khaos/
+    when: always
+    expire_in: 30 days
+  cache:
+    key: khaos-${CI_COMMIT_REF_SLUG}
+    paths:
+      - .uv-cache/
+      - .khaos/cache/
+
+# Main Khaos test job template
+.khaos_test:
+  extends: .khaos_base
+  script:
+    - |
+      # Build command
+      CMD="uv run khaos run ${KHAOS_AGENT_PATH}"
+
+      # Add scenarios if specified
+      if [ -n "${KHAOS_SCENARIOS}" ]; then
+        for scenario in $(echo "${KHAOS_SCENARIOS}" | tr ',' ' '); do
+          CMD="${CMD} --scenario ${scenario}"
+        done
+      fi
+
+      # Add scenario file if specified
+      if [ -n "${KHAOS_SCENARIO_FILE}" ]; then
+        CMD="${CMD} --scenario-file ${KHAOS_SCENARIO_FILE}"
+      fi
+
+      # Add options
+      CMD="${CMD} --runs ${KHAOS_RUNS}"
+      CMD="${CMD} --parallel ${KHAOS_PARALLEL}"
+      CMD="${CMD} --output json"
+      CMD="${CMD} --output-file khaos-results.json"
+
+      echo "Running: ${CMD}"
+      ${CMD}
+    - |
+      # Check reliability threshold
+      if [ -f "khaos-results.json" ]; then
+        RELIABILITY=$(cat khaos-results.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('reliability_score', 0))")
+        THRESHOLD=${KHAOS_RELIABILITY_THRESHOLD}
+
+        echo "Reliability Score: ${RELIABILITY}"
+        echo "Threshold: ${THRESHOLD}"
+
+        if [ "${KHAOS_FAIL_ON}" != "none" ]; then
+          python3 -c "exit(0 if float('${RELIABILITY}') >= float('${THRESHOLD}') else 1)"
+        fi
+      fi
+    - |
+      # Sync to Khaos Cloud if token is set
+      if [ -n "${KHAOS_API_TOKEN}" ] && [ -f "khaos-results.json" ]; then
+        uv run khaos sync --file khaos-results.json || true
+      fi
+
+# Gate check job template
+.khaos_gate:
+  extends: .khaos_base
+  script:
+    - |
+      # Run gate check
+      CMD="uv run khaos gate-check"
+
+      if [ -n "${KHAOS_AGENT_PATH}" ]; then
+        CMD="${CMD} ${KHAOS_AGENT_PATH}"
+      fi
+
+      if [ -f "${KHAOS_CONFIG_FILE}" ]; then
+        CMD="${CMD} --config ${KHAOS_CONFIG_FILE}"
+      fi
+
+      CMD="${CMD} --reliability-threshold ${KHAOS_RELIABILITY_THRESHOLD}"
+
+      echo "Running: ${CMD}"
+      ${CMD}
+
+# Lint scenarios job template
+.khaos_lint:
+  extends: .khaos_base
+  script:
+    - uv run khaos scenario-lint ${KHAOS_SCENARIO_FILE:-scenarios/}
+  rules:
+    - changes:
+        - "scenarios/**/*"
+        - "*.yaml"
+        - "*.yml"
+
+# Example pipeline stages
+stages:
+  - lint
+  - test
+  - gate
+
+# Example jobs - customize these for your project
+khaos:lint:
+  extends: .khaos_lint
+  stage: lint
+  allow_failure: true
+
+khaos:test:
+  extends: .khaos_test
+  stage: test
+  needs: ["khaos:lint"]
+  variables:
+    KHAOS_AGENT_PATH: "my_agent"
+    KHAOS_RUNS: "3"
+
+khaos:gate:
+  extends: .khaos_gate
+  stage: gate
+  needs: ["khaos:test"]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_MERGE_REQUEST_IID

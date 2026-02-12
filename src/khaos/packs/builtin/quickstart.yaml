@@ -1,0 +1,97 @@
+# Quickstart Pack
+# Fast evaluation for development iteration (~2 minutes)
+#
+# Use for: Quick feedback during development
+# NOT for: Production readiness assessment
+
+pack:
+  name: quickstart
+  version: "1.0"
+  description: "Fast evaluation for development iteration. Tests core capabilities with minimal faults."
+  estimated_time: "2 minutes"
+
+phases:
+  baseline:
+    runs: 3  # 3 repeats for consistency metrics
+    faults: []
+    security: false
+    timeout_ms: 60000
+
+  resilience:
+    runs: 1
+    # Deterministic fault schedule: each input gets specific faults (100% probability)
+    fault_schedule:
+      math_simple:
+        - type: llm_response_timeout
+          config:
+            delay_ms: 100
+      instruction_list_3:
+        - type: llm_rate_limit
+          config:
+            retry_after_ms: 1000
+      reasoning_logic:
+        - type: model_fallback_forced
+          config:
+            fallback_model: gpt-4o-mini
+      text_uppercase:
+        - type: http_latency
+          config:
+            delay_ms: 500
+      knowledge_capital:
+        - type: llm_model_unavailable
+          config:
+            error_message: "Model temporarily unavailable"
+      multistep_sequence:
+        - type: timeout
+          config:
+            timeout_ms: 5000
+    security: false
+    timeout_ms: 90000
+
+  security:
+    runs: 1
+    faults: []
+    security: true
+    attack_bundles:
+      - security_quickstart
+    attack_limit: 10
+    timeout_ms: 120000
+
+# Uses subset of canonical inputs for speed
+inputs:
+  - id: math_simple
+    text: "What is 15 + 27?"
+    category: math
+    goal:
+      contains: "42"
+
+  - id: instruction_list_3
+    text: "List exactly 3 colors. Just the colors, nothing else."
+    category: instruction
+    goal:
+      min_length: 5
+      max_length: 100
+
+  - id: reasoning_logic
+    text: "If all cats have tails, and Whiskers is a cat, does Whiskers have a tail? Answer yes or no."
+    category: reasoning
+    goal:
+      contains_any: ["yes", "Yes", "YES"]
+
+  - id: text_uppercase
+    text: "Convert 'khaos' to uppercase. Just the result."
+    category: text
+    goal:
+      contains: "KHAOS"
+
+  - id: knowledge_capital
+    text: "What is the capital of France? Just the city name."
+    category: knowledge
+    goal:
+      contains_any: ["Paris", "paris"]
+
+  - id: multistep_sequence
+    text: "Start with 5, add 3, then multiply by 2. What is the result?"
+    category: multistep
+    goal:
+      contains: "16"

@@ -1,0 +1,65 @@
+# Baseline Pack
+# Pure agent observation with no faults or attacks (~1 minute)
+#
+# Use for: Establishing baseline metrics, performance benchmarking
+# Focus: Clean measurements without any interference
+
+pack:
+  name: baseline
+  version: "1.0"
+  description: "Pure baseline measurement. No faults, no security attacks. Establishes agent's normal performance."
+  estimated_time: "1 minute"
+
+phases:
+  baseline:
+    runs: 3
+    faults: []
+    security: false
+    timeout_ms: 120000
+
+# No resilience or security phases - just baseline
+
+# Core canonical inputs
+inputs:
+  - id: math_simple
+    text: "What is 15 + 27?"
+    category: math
+    goal:
+      contains: "42"
+
+  - id: math_multiplication
+    text: "Calculate 12 times 8."
+    category: math
+    goal:
+      contains: "96"
+
+  - id: instruction_list_3
+    text: "List exactly 3 colors. Just the colors, nothing else."
+    category: instruction
+    goal:
+      min_length: 5
+      max_length: 100
+
+  - id: reasoning_logic
+    text: "If all cats have tails, and Whiskers is a cat, does Whiskers have a tail? Answer yes or no."
+    category: reasoning
+    goal:
+      contains_any: ["yes", "Yes", "YES"]
+
+  - id: text_uppercase
+    text: "Convert 'khaos' to uppercase. Just the result."
+    category: text
+    goal:
+      contains: "KHAOS"
+
+  - id: knowledge_capital
+    text: "What is the capital of France? Just the city name."
+    category: knowledge
+    goal:
+      contains_any: ["Paris", "paris"]
+
+  - id: multistep_sequence
+    text: "Start with 5, add 3, then multiply by 2. What is the result?"
+    category: multistep
+    goal:
+      contains: "16"
