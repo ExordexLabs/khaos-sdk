@@ -59,7 +59,7 @@ class CloudConfig:
         """Return dashboard URL with fallback to environment or default."""
         if self.dashboard_url:
             return self.dashboard_url.rstrip("/")
-        return os.environ.get("KHAOS_DASHBOARD_URL", "https://dashboard.khaos.dev").rstrip("/")
+        return os.environ.get("KHAOS_DASHBOARD_URL", "https://khaos.exordex.com").rstrip("/")
 
 
 def _default_cloud_config_path() -> Path:

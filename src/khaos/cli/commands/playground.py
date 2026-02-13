@@ -11,7 +11,7 @@ The playground opens a ChatGPT-like interface in your browser where you can:
 - Export the session as a Khaos pack YAML
 
 Your agent runs locally while the CLI streams events to the hosted
-Khaos dashboard (https://dashboard.khaos.dev) via WebSocket relay.
+Khaos dashboard (https://khaos.exordex.com) via WebSocket relay.
 
 Note: Agents must be discovered first with `khaos discover`.
 
@@ -65,7 +65,7 @@ def start(
         "",
         "--dashboard",
         "-d",
-        help="Dashboard base URL override (default: https://dashboard.khaos.dev).",
+        help="Dashboard base URL override (default: https://khaos.exordex.com).",
     ),
     no_browser: bool = typer.Option(
         False,
@@ -81,7 +81,7 @@ def start(
     Agents must be discovered first with `khaos discover`.
 
     Free users get 10 playground sessions per month.
-    Upgrade for unlimited sessions at https://dashboard.khaos.dev/pricing
+    Upgrade for unlimited sessions at https://khaos.exordex.com/pricing
 
     Examples:
 

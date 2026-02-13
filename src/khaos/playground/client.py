@@ -72,7 +72,7 @@ class PlaygroundClient:
     agent_script: str
     agent_name: str | None = None
     agent_handler: str | None = None
-    dashboard_url: str = "https://dashboard.khaos.dev"
+    dashboard_url: str = "https://khaos.exordex.com"
 
     # Reuse internal state from PlaygroundServer
     _agent_info: AgentInfo | None = None
@@ -1349,7 +1349,7 @@ async def run_playground_client(
     agent_script: str,
     agent_name: str | None = None,
     handler: str | None = None,
-    dashboard_url: str = "https://dashboard.khaos.dev",
+    dashboard_url: str = "https://khaos.exordex.com",
     open_browser: bool = True,
 ) -> None:
     """Run the playground client (Railway mode).

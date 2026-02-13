@@ -12,7 +12,7 @@ VALID_SCOPES = ("ingest:write", "runs:read", "runs:write")
 DEFAULT_SCOPE = "ingest:write"
 
 # Dashboard settings
-DEFAULT_DASHBOARD_URL = os.environ.get("KHAOS_DASHBOARD_URL", "https://dashboard.khaos.dev")
+DEFAULT_DASHBOARD_URL = os.environ.get("KHAOS_DASHBOARD_URL", "https://khaos.exordex.com")
 
 # LLM content handling modes
 LLM_CONTENT_MODES = ("redact", "mask", "raw")

@@ -135,7 +135,7 @@ async def request_playground_session(
                     message=data.get("error", "Session limit reached"),
                     sessions_used=data.get("sessionsUsed", 0),
                     sessions_limit=data.get("sessionsLimit", 3),
-                    upgrade_url=data.get("upgradeUrl", "https://dashboard.khaos.dev/pricing"),
+                    upgrade_url=data.get("upgradeUrl", "https://khaos.exordex.com/pricing"),
                     resets_at=resets_at,
                 )
             except (ValueError, KeyError) as e:

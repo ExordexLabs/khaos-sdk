@@ -48,7 +48,7 @@ def ensure_logged_in(*, scopes: list[str] | None = None, force: bool = False) ->
 
     auth_config = DeviceAuthConfig(
         api_url=config.api_url,
-        dashboard_url=config.dashboard_url or "https://dashboard.khaos.dev",
+        dashboard_url=config.dashboard_url or "https://khaos.exordex.com",
         project=None,  # Select in browser
         scopes=scopes,
     )

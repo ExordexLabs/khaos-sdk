@@ -162,7 +162,7 @@ def _handle_login(*, force: bool = False, admin: bool = False, scopes: list[str]
 
         auth_config = DeviceAuthConfig(
             api_url=config.api_url,
-            dashboard_url=config.dashboard_url or "https://dashboard.khaos.dev",
+            dashboard_url=config.dashboard_url or "https://khaos.exordex.com",
             project=None,  # Will be selected in browser
             scopes=requested_scopes,
         )
