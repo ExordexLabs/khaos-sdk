@@ -50,13 +50,28 @@ Converts to Apache 2.0 on 2030-01-29.
 Cloud dashboard and collaboration workflows are rolling out separately.
 Join the waitlist at [exordex.com/khaos](https://exordex.com/khaos).
 
-## Quick Start - Evaluation Packs
+## Quick Start
 
-The fastest way to test your agent:
+Khaos runs agents decorated with `@khaosagent` by name (not by file path):
+
+```python
+# Your agent file (agent.py)
+from khaos import khaosagent
+
+@khaosagent(name="my-agent", framework="openai")
+def main(prompt: str) -> dict:
+    # Your agent code here
+    return {"response": result}
+```
+
+Then discover and test:
 
 ```bash
-# Run the quickstart pack (baseline + resilience + security)
-khaos run agent.py --pack quickstart
+# 1. Discover agents in your project
+khaos discover
+
+# 2. Run the quickstart pack (baseline + resilience + security)
+khaos run my-agent --pack quickstart
 ```
 
 **Beautiful real-time output:**
@@ -141,7 +156,7 @@ Khaos provides 20 runtime faults across 6 categories:
 
 Inject faults via CLI:
 ```bash
-khaos run agent.py --fault llm_rate_limit --fault tool_timeout
+khaos run my-agent --fault llm_rate_limit --fault tool_timeout
 ```
 
 Or in scenario YAML:
@@ -258,9 +273,9 @@ KHAOS_API_URL=http://localhost:8585 khaos sync --login --scope ingest:write
 khaos sync --status
 khaos sync --status --json
 
-# Run with registry/file helpers
-khaos run agent.py --scenario-id alpha
-khaos run agent.py --scenario-file custom.yaml
+# Run with scenarios
+khaos run my-agent --scenario-id alpha
+khaos run my-agent --scenario-file custom.yaml
 
 # Remove credentials
 khaos sync --logout
@@ -286,8 +301,12 @@ enqueue a completed run for upload once network access is available. Pending
 jobs live under `~/.khaos/queue/`. When ready, trigger the uploader with:
 
 ```bash
-khaos run examples/echo_agent.py --scenario default --scenarios-path scenarios --sync
-khaos run examples/echo_agent.py --scenario-id default --sync --auto-sync
+# First discover the agent
+khaos discover examples/
+
+# Then run with sync
+khaos run echo-agent --scenario default --scenarios-path scenarios --sync
+khaos run echo-agent --scenario-id default --sync --auto-sync
 khaos sync          # uploads all pending jobs
 khaos sync --run run-1234
 khaos sync --status --json
@@ -321,12 +340,12 @@ transports or tweak sandboxing with `--transport`, `--transport-config`, and
 
 ```bash
 # Allowlist additional env vars and increase the startup timeout
-khaos run agent.py --scenario default --transport subprocess \
+khaos run my-agent --scenario default --transport subprocess \
   --transport-option allow_env=OPENAI_API_KEY,ANTHROPIC_API_KEY \
   --transport-option startup_timeout=20
 
 # Read options from a JSON config
-khaos run agent.py --scenario default --transport-config transports.json
+khaos run my-agent --scenario default --transport-config transports.json
 
 # transports.json
 {
@@ -339,12 +358,11 @@ khaos run agent.py --scenario default --transport-config transports.json
 }
 
 # Placeholder MCP transport (wraps subprocess + records MCP servers)
-khaos run agent.py --scenario default --transport mcp-stdio \
-  --transport-option agent.command="python agent.py" \
+khaos run my-agent --scenario default --transport mcp-stdio \
   --transport-option servers='[{"name":"sqlite","transport":"stdio","command":"mcp-server-sqlite"}]'
 
 # Emit a JSON report for downstream tooling
-khaos run agent.py --scenario default --report-json reports/run.json
+khaos run my-agent --scenario default --report-json reports/run.json
 ```
 
 The transport registry lives in `khaos.transport.registry`; new adapters (e.g.,
@@ -385,7 +403,11 @@ dummy server. This exercises the stdio proxy, produces `mcp.*` metrics, and
 lets you verify the dashboard's MCP card end-to-end:
 
 ```bash
-uv run khaos run examples/mcp_tool_agent.py \
+# First discover the MCP example agent
+uv run khaos discover examples/
+
+# Then run with MCP transport
+uv run khaos run mcp-tool-agent \
   --scenario-file scenarios/mcp_fault_demo.yaml \
   --transport mcp-stdio \
   --mcp-server '{"name":"sqlite","transport":"stdio","command":["python","examples/mcp_dummy_server.py"]}' \
@@ -405,7 +427,11 @@ records token/cost/latency metrics, and emits a payload that the
 `llm_observability_demo` scenario validates.
 
 ```bash
-uv run khaos run examples/llm_observability_agent.py \
+# First discover the observability example agent
+uv run khaos discover examples/
+
+# Then run with LLM observability
+uv run khaos run llm-observability-agent \
   --scenario-file scenarios/llm_observability_demo.yaml \
   --llm-content-mode mask \
   --sync
