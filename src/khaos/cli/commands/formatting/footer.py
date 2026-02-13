@@ -75,7 +75,7 @@ def print_run_footer(
         short_url, _ = _shorten_url(url)
         console.print(f"[dim]View results:[/dim] [link={url}]{short_url}[/link]")
     else:
-        console.print(f"[dim]Upload results:[/dim] [cyan]khaos sync[/cyan]")
+        console.print(f"[dim]Cloud features:[/dim] [link=https://exordex.com/khaos]exordex.com/khaos[/link] (waitlist)")
 
     # Run reference - minimal, only if useful
     console.print(f"[dim]Run {run_id[:8]}[/dim]")
