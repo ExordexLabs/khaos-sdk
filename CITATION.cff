@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use Khaos SDK in research, please cite it using the metadata below."
+title: "Khaos SDK"
+type: software
+authors:
+  - name: "Exordex"
+version: "1.0.0"
+license: "BUSL-1.1"
+repository-code: "https://github.com/ExordexLabs/khaos-sdk"
+url: "https://github.com/ExordexLabs/khaos-sdk"

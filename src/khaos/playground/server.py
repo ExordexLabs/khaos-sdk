@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from collections.abc import Callable
+from urllib.parse import parse_qs, urlsplit
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +119,7 @@ class PlaygroundServer:
         ):
             playground_url = self._get_playground_url()
             logger.info(f"Playground server started at ws://{self.host}:{self.port}")
-            logger.info(f"Dashboard URL: {playground_url}")
+            logger.info("Dashboard URL prepared for host %s", self.dashboard_url)
 
             if open_browser:
                 webbrowser.open(playground_url)
@@ -283,7 +284,16 @@ class PlaygroundServer:
             path = websocket.request.path if hasattr(websocket, 'request') else websocket.path
         except AttributeError:
             path = str(getattr(websocket, 'path', ''))
-        if f"token={self._session_token}" not in path:
+
+        token = ""
+        try:
+            query = urlsplit(path).query
+            token_values = parse_qs(query).get("token", [])
+            token = token_values[0] if token_values else ""
+        except Exception:
+            token = ""
+
+        if not token or not secrets.compare_digest(token, self._session_token):
             await websocket.close(4001, "Invalid session token")
             return
 

@@ -111,12 +111,12 @@ class PlaygroundClient:
         # Build WebSocket URL with token
         uri = f"{self.railway_ws_url}?token={self.session_token}"
 
-        logger.info(f"Connecting to Railway relay: {uri}")
+        logger.info("Connecting to Railway relay: %s", self.railway_ws_url)
 
         # Open browser BEFORE connecting (so user sees "connecting" state)
         if open_browser:
             playground_url = f"{self.dashboard_url}/playground?token={self.session_token}"
-            logger.info(f"Opening dashboard: {playground_url}")
+            logger.info("Opening dashboard at %s", self.dashboard_url)
             webbrowser.open(playground_url)
 
         # Connect to Railway

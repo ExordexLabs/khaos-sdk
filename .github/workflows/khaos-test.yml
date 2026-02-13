@@ -116,46 +116,48 @@ jobs:
         run: |
           set +e
 
-          # Build command
-          CMD="uv run khaos run ${{ inputs.agent-path }}"
+          # Build command safely as an argv array.
+          CMD=(uv run khaos run "${{ inputs.agent-path }}")
 
           # Add scenarios
           if [ -n "${{ inputs.scenarios }}" ]; then
-            for scenario in $(echo "${{ inputs.scenarios }}" | tr ',' ' '); do
-              CMD="$CMD --scenario $scenario"
+            IFS=',' read -r -a SCENARIOS <<< "${{ inputs.scenarios }}"
+            for scenario in "${SCENARIOS[@]}"; do
+              scenario="$(echo "$scenario" | xargs)"
+              if [ -n "$scenario" ]; then
+                CMD+=(--scenario "$scenario")
+              fi
             done
           fi
 
           # Add scenario file/directory
           if [ -n "${{ inputs.scenario-file }}" ]; then
-            CMD="$CMD --scenario-file ${{ inputs.scenario-file }}"
+            CMD+=(--scenario-file "${{ inputs.scenario-file }}")
           fi
 
           # Add options
-          CMD="$CMD --runs ${{ inputs.runs }}"
-          CMD="$CMD --parallel ${{ inputs.parallel }}"
-          CMD="$CMD --output json"
-          CMD="$CMD --output-file khaos-results.json"
+          CMD+=(--runs "${{ inputs.runs }}")
+          CMD+=(--parallel "${{ inputs.parallel }}")
+          CMD+=(--output json)
+          CMD+=(--output-file khaos-results.json)
 
-          echo "Running: $CMD"
-          $CMD
+          printf 'Running:'
+          printf ' %q' "${CMD[@]}"
+          printf '\n'
+          "${CMD[@]}"
           EXIT_CODE=$?
 
           # Parse results
           if [ -f "khaos-results.json" ]; then
-            RELIABILITY=$(cat khaos-results.json | jq -r '.reliability_score // 0')
-            echo "reliability-score=$RELIABILITY" >> $GITHUB_OUTPUT
-            echo "results-path=khaos-results.json" >> $GITHUB_OUTPUT
+            THRESHOLD="${{ inputs.reliability-threshold }}"
+            RELIABILITY=$(python -c "import json; print(float(json.load(open('khaos-results.json', 'r', encoding='utf-8')).get('reliability_score') or 0.0))")
+            PASSED=$(THRESHOLD="$THRESHOLD" RELIABILITY="$RELIABILITY" python -c "import os; print('true' if float(os.environ['RELIABILITY']) >= float(os.environ.get('THRESHOLD', '0.8')) else 'false')")
+            echo "reliability-score=$RELIABILITY" >> "$GITHUB_OUTPUT"
+            echo "results-path=khaos-results.json" >> "$GITHUB_OUTPUT"
+            echo "passed=$PASSED" >> "$GITHUB_OUTPUT"
 
-            # Check threshold
-            THRESHOLD=${{ inputs.reliability-threshold }}
-            if (( $(echo "$RELIABILITY >= $THRESHOLD" | bc -l) )); then
-              echo "passed=true" >> $GITHUB_OUTPUT
-            else
-              echo "passed=false" >> $GITHUB_OUTPUT
-              if [ "${{ inputs.fail-on }}" != "none" ]; then
-                EXIT_CODE=1
-              fi
+            if [ "$PASSED" != "true" ] && [ "${{ inputs.fail-on }}" != "none" ]; then
+              EXIT_CODE=1
             fi
           else
             echo "reliability-score=0" >> $GITHUB_OUTPUT
@@ -167,29 +169,31 @@ jobs:
 
       - name: Generate summary
         if: always()
+        env:
+          THRESHOLD: ${{ inputs.reliability-threshold }}
+          PASSED: ${{ steps.run.outputs.passed }}
         run: |
           echo "## Khaos Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ -f "khaos-results.json" ]; then
-            RELIABILITY=$(cat khaos-results.json | jq -r '.reliability_score // 0')
-            TOTAL=$(cat khaos-results.json | jq -r '.total_runs // 0')
-            PASSED=$(cat khaos-results.json | jq -r '.passed_runs // 0')
-            FAILED=$(cat khaos-results.json | jq -r '.failed_runs // 0')
+            RELIABILITY=$(python -c "import json; print(float(json.load(open('khaos-results.json', 'r', encoding='utf-8')).get('reliability_score') or 0.0))")
+            TOTAL=$(python -c "import json; print(int(json.load(open('khaos-results.json', 'r', encoding='utf-8')).get('total_runs') or 0))")
+            PASSED_RUNS=$(python -c "import json; print(int(json.load(open('khaos-results.json', 'r', encoding='utf-8')).get('passed_runs') or 0))")
+            FAILED_RUNS=$(python -c "import json; print(int(json.load(open('khaos-results.json', 'r', encoding='utf-8')).get('failed_runs') or 0))")
 
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
             echo "| Reliability Score | **${RELIABILITY}** |" >> $GITHUB_STEP_SUMMARY
-            echo "| Total Runs | $TOTAL |" >> $GITHUB_STEP_SUMMARY
-            echo "| Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
-            echo "| Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Runs | ${TOTAL} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Passed | ${PASSED_RUNS} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Failed | ${FAILED_RUNS} |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
 
-            if [ "${{ steps.run.outputs.passed }}" == "true" ]; then
-              echo "" >> $GITHUB_STEP_SUMMARY
+            if [ "${PASSED}" == "true" ]; then
               echo ":white_check_mark: **All reliability thresholds met**" >> $GITHUB_STEP_SUMMARY
             else
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo ":x: **Reliability below threshold (${{ inputs.reliability-threshold }})**" >> $GITHUB_STEP_SUMMARY
+              echo ":x: **Reliability below threshold (${THRESHOLD})**" >> $GITHUB_STEP_SUMMARY
             fi
           else
             echo ":warning: No results file generated" >> $GITHUB_STEP_SUMMARY
@@ -206,7 +210,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Sync to Khaos Cloud
-        if: env.KHAOS_API_TOKEN != '' && always()
+        if: secrets.KHAOS_API_TOKEN != '' && always()
         env:
           KHAOS_API_TOKEN: ${{ secrets.KHAOS_API_TOKEN }}
         run: |

@@ -116,14 +116,18 @@ def start(
     # Railway WebSocket relay URL (env var override only)
     railway_ws_url = os.environ.get("KHAOS_RAILWAY_WS_URL", "wss://api.khaos.dev/ws")
 
-    playground_url = f"{dashboard_url}/playground?token={session_token}"
-
     console.print(
         f"[bold cyan]Khaos Playground[/bold cyan] Starting interactive session...\n"
     )
     console.print(f"  Agent: [green]{agent_name}[/green]")
     console.print(f"  Script: [dim]{target_path}[/dim]")
-    console.print(f"\n  [bold]Playground URL:[/bold] {playground_url}")
+    if no_browser:
+        playground_url = f"{dashboard_url}/playground?token={session_token}"
+        console.print(f"\n  [bold]Playground URL:[/bold] {playground_url}")
+        console.print("  [yellow]Warning:[/yellow] URL contains a temporary session token.")
+    else:
+        console.print(f"\n  [bold]Dashboard:[/bold] {dashboard_url}/playground")
+        console.print("  Opening browser with a temporary session token.")
     console.print()
 
     # Run the Railway client (NOT server)

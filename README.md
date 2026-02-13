@@ -23,8 +23,9 @@ Requires Python 3.11+.
 
 **Version 1.0.0** - Production-ready for agent testing and evaluation.
 
-**License:** [BSL 1.1](https://mariadb.com/bsl11/) - Free for evaluation, development,
-and non-production use. Production use requires a [commercial license](https://exordex.com/pricing).
+**License:** Source-available under [BSL 1.1](https://mariadb.com/bsl11/) (not OSI open source).
+Free for evaluation, development, and non-production use. Production use requires a
+[commercial license](https://exordex.com/pricing).
 Converts to Apache 2.0 on 2030-01-29.
 
 **Batteries included:**
@@ -34,6 +35,20 @@ Converts to Apache 2.0 on 2030-01-29.
 - 242+ security attack catalog
 - 20 runtime faults across 6 categories
 - Zero-code LLM telemetry capture
+
+## Availability
+
+### Available now (CLI)
+
+- `khaos run` for local baseline/resilience/security testing
+- `khaos test` for Python-native test suites
+- `khaos ci` for CI/CD integration
+- `khaos sync` for optional result upload when cloud access is configured
+
+### Cloud rollout
+
+Cloud dashboard and collaboration workflows are rolling out separately.
+Join the waitlist at [exordex.com/khaos](https://exordex.com/khaos).
 
 ## Quick Start - Evaluation Packs
 
@@ -102,14 +117,11 @@ The playground opens an interactive chat interface where you can:
 - **Export sessions** as YAML for CI/CD automation
 
 ```bash
-# Start with custom port
-khaos playground start my-agent --port 8888
+# Start with custom dashboard URL
+khaos playground start my-agent --dashboard https://dashboard.khaos.dev
 
 # Start without auto-opening browser
 khaos playground start my-agent --no-browser
-
-# Local development (skip cloud auth)
-khaos playground start my-agent --local
 ```
 
 Visit [exordex.com/khaos](https://exordex.com/khaos) for full documentation and cloud access.
@@ -236,32 +248,31 @@ breakdown, or scenario difficulty metadata. Visit [exordex.com/khaos](https://ex
 ## Cloud Auth Commands
 
 The CLI stores project-scoped API tokens for the ingestion service. Manage them
-with the `cloud` subcommands:
+with `khaos sync`:
 
 ```bash
-# Store token + project id (prompts if omitted)
-khaos cloud login --project proj_demo --api-url http://localhost:8585 --scope ingest:write
+# Store token (project is selected during browser auth)
+KHAOS_API_URL=http://localhost:8585 khaos sync --login --scope ingest:write
 
 # Inspect current settings (text or JSON)
-khaos cloud status
-khaos cloud status --show-jobs      # include queued runs
-khaos cloud status --json
-khaos list-scenarios --fault-type timeout
+khaos sync --status
+khaos sync --status --json
 
 # Run with registry/file helpers
 khaos run agent.py --scenario-id alpha
 khaos run agent.py --scenario-file custom.yaml
 
 # Remove credentials
-khaos cloud logout
+khaos sync --logout
 
-# Inspect or modify sync queue
-khaos cloud queue list
-khaos cloud queue purge --all -y
-khaos cloud queue retry run-1234 --cleanup
+# Sync all pending runs or target a specific run
+khaos sync
+khaos sync --run run-1234
+khaos sync --force
+khaos sync --cleanup
 ```
 
-`khaos cloud status` also hits `/ingest/status` on the ingestion API to confirm
+`khaos sync --status` also hits `/ingest/status` on the ingestion API to confirm
 your token and project scopes, surfacing any auth failures immediately.
 
 Credentials live in `~/.khaos/cloud.json` (permissions default to `0600`). Each
@@ -278,10 +289,8 @@ jobs live under `~/.khaos/queue/`. When ready, trigger the uploader with:
 khaos run examples/echo_agent.py --scenario default --scenarios-path scenarios --sync
 khaos run examples/echo_agent.py --scenario-id default --sync --auto-sync
 khaos sync          # uploads all pending jobs
-khaos sync --max 1  # process a single job
-khaos cloud queue list
-khaos cloud queue retry run-1234
-khaos cloud status --show-jobs --json
+khaos sync --run run-1234
+khaos sync --status --json
 ```
 
 Set `KHAOS_AUTO_SYNC=1` (and optionally `KHAOS_AUTO_SYNC_CLEANUP=1`) to make
@@ -292,18 +301,17 @@ Set `KHAOS_AUTO_SYNC=1` (and optionally `KHAOS_AUTO_SYNC_CLEANUP=1`) to make
 Scan your repository for agent entrypoints with rich metadata:
 
 ```bash
-khaos agents discover --include "agents/**/*.py" --exclude node_modules --save
+khaos discover .
 
-# Persist preferred glob rules (~/.khaos/agent-discovery.json)
-khaos agents rules --include "src/agents/*.py" --exclude venv --exclude dist
+# Discover in a specific directory
+khaos discover ./agents/
 
-# Reset to defaults and show the current configuration
-khaos agents rules --reset
+# List registered agents
+khaos discover --list
 ```
 
-The `agents rules` command writes `include`/`exclude_dirs` to
-`~/.khaos/agent-discovery.json`, so subsequent `khaos agents discover` runs pick
-up your defaults automatically.
+`khaos discover` scans Python files for `@khaosagent` decorators, registers
+them locally, and lets you run by name (`khaos run <agent-name>`).
 
 ## Transport Selection (experimental)
 
@@ -477,3 +485,19 @@ from khaos.engine import (
 ```
 
 See `src/khaos/engine/fault_plugins.py` for the full API and more examples.
+
+## Citation
+
+If you use Khaos SDK in research, please cite:
+
+```bibtex
+@software{khaos_sdk_2026,
+  author = {{Exordex}},
+  title = {Khaos SDK},
+  year = {2026},
+  version = {1.0.0},
+  url = {https://github.com/ExordexLabs/khaos-sdk}
+}
+```
+
+Citation metadata is also available in [`CITATION.cff`](./CITATION.cff).
