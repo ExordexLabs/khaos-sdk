@@ -65,7 +65,7 @@ class PlaygroundServer:
 
     port: int = field(default_factory=lambda: int(os.environ.get("KHAOS_PLAYGROUND_PORT", "8765")))
     host: str = field(default_factory=lambda: os.environ.get("KHAOS_PLAYGROUND_HOST", "localhost"))
-    dashboard_url: str = field(default_factory=lambda: os.environ.get("KHAOS_DASHBOARD_URL", "http://localhost:3000"))
+    dashboard_url: str = field(default_factory=lambda: os.environ.get("KHAOS_DASHBOARD_URL", "https://khaos.exordex.com"))
     agent_script: str = ""
     agent_name: str | None = None
     agent_handler: str | None = None
@@ -1476,7 +1476,7 @@ async def run_playground_server(
     agent_name: str | None = None,
     handler: str | None = None,
     port: int = 8765,
-    dashboard_url: str = "http://localhost:3000",
+    dashboard_url: str = "https://khaos.exordex.com",
     open_browser: bool = True,
     session_token: str | None = None,
 ) -> None:
