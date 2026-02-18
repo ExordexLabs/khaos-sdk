@@ -9,6 +9,8 @@ Design Principles:
 Core Commands:
     start      - Smart, capability-aware evaluation (recommended for new users)
     run        - Full control with explicit eval selection
+    recommend  - Suggest next best test commands for an agent
+    taxonomy   - Explore taxonomy roots/branches/ideas and starter plans
     evals      - List and manage evaluations
     compare    - Compare runs (or list recent runs with no args)
     ci         - CI/CD pipeline command (run + gate + report in one)
@@ -79,6 +81,7 @@ def _register_commands() -> None:
     # Import new clean commands
     from khaos.cli.commands.run import run, list_evals
     from khaos.cli.commands.start import start, guide
+    from khaos.cli.commands.recommend import recommend
     from khaos.cli.commands.discover import discover
     from khaos.cli.commands.compare import compare
     from khaos.cli.commands.gate import gate
@@ -92,10 +95,12 @@ def _register_commands() -> None:
     from khaos.cli.commands.playground import playground_app
     from khaos.cli.commands.demo import demo
     from khaos.cli.commands.test import test
+    from khaos.cli.commands.taxonomy import taxonomy_app
 
     # Register core commands - start is the recommended entry point
     app.command("start")(start)  # Smart, capability-aware evaluation (recommended)
     app.command("run")(run)  # Full control with explicit eval selection
+    app.command("recommend")(recommend)  # Suggest the next best commands
     app.command("discover")(discover)  # Scan and register agents
     app.command("compare")(compare)  # Also lists runs when called with no args
     app.command("ci")(ci)  # CI/CD pipeline command
@@ -117,6 +122,9 @@ def _register_commands() -> None:
 
     # Attack discovery commands
     app.add_typer(attacks_app, name="attacks")
+
+    # Taxonomy browsing commands
+    app.add_typer(taxonomy_app, name="taxonomy")
 
     # Interactive playground
     app.add_typer(playground_app, name="playground")

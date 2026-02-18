@@ -26,6 +26,7 @@ from khaos.packs import (
     get_builtin_pack,
     list_builtin_packs,
     PackRunner,
+    Pack,
     load_pack,
     PhaseType,
     PackInput,
@@ -412,6 +413,129 @@ def _resolve_attack_categories(
     return categories or None
 
 
+def _normalize_attack_ids(attack_ids: list[str] | None) -> list[str]:
+    """Normalize attack IDs passed via CLI flags."""
+    if not attack_ids:
+        return []
+    parsed: list[str] = []
+    seen: set[str] = set()
+    for raw in attack_ids:
+        for token in str(raw).split(","):
+            attack_id = token.strip()
+            if not attack_id or attack_id in seen:
+                continue
+            seen.add(attack_id)
+            parsed.append(attack_id)
+    return parsed
+
+
+def _filter_attacks_by_ids(
+    attacks: list[dict[str, Any]],
+    attack_ids: list[str] | None,
+) -> tuple[list[dict[str, Any]], set[str]]:
+    """Filter attack dicts by attack_id while preserving order."""
+    requested = set(_normalize_attack_ids(attack_ids))
+    if not requested:
+        return list(attacks), set()
+
+    filtered: list[dict[str, Any]] = []
+    matched: set[str] = set()
+    for attack in attacks:
+        attack_id = str(attack.get("attack_id", "")).strip()
+        if not attack_id or attack_id not in requested:
+            continue
+        filtered.append(attack)
+        matched.add(attack_id)
+    return filtered, matched
+
+
+def _prepare_security_selection(
+    *,
+    pack: Pack,
+    capabilities: dict[str, Any],
+    attack_ids: list[str] | None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any] | None]:
+    """Build security attack selection metadata and prefiltered attacks."""
+    security_phase = None
+    for p in pack.phases:
+        if p.type.value == "security":
+            security_phase = p
+            break
+
+    if security_phase is None:
+        return [], [], None
+
+    resolved_categories_safe: list[str] | None = None
+    requested_bundles: list[str] = []
+    tier: str | None = None
+
+    caps_list = _capability_dict_to_list(capabilities)
+    resolved_categories = _resolve_attack_categories(
+        attack_categories=security_phase.attack_categories,
+        attack_bundles=getattr(security_phase, "attack_bundles", None),
+        capabilities=capabilities,
+    )
+    if isinstance(resolved_categories, list):
+        resolved_categories_safe = [str(c) for c in resolved_categories if str(c).strip()]
+
+    raw_bundles = getattr(security_phase, "attack_bundles", None)
+    if isinstance(raw_bundles, list):
+        requested_bundles = [str(b) for b in raw_bundles if str(b).strip()]
+
+    if getattr(security_phase, "security_config", None) is not None:
+        tier = getattr(security_phase.security_config, "tier", None)
+
+    attacks = _get_attacks_for_pack(
+        attack_categories=resolved_categories,
+        attack_limit=security_phase.attack_limit,
+        security_config=security_phase.security_config,
+        agent_capabilities=caps_list if caps_list else None,
+    )
+    attacks.extend(_get_custom_attacks_for_phase(security_phase))
+    attacks_candidate = list(attacks)
+
+    filtered_attacks, matched_ids = _filter_attacks_by_ids(attacks, attack_ids)
+    requested_ids = _normalize_attack_ids(attack_ids)
+    missing_ids = sorted(set(requested_ids) - matched_ids)
+    if missing_ids:
+        available = sorted(
+            {
+                str(a.get("attack_id", "")).strip()
+                for a in attacks_candidate
+                if str(a.get("attack_id", "")).strip()
+            }
+        )
+        sample = ", ".join(available[:10])
+        suffix = "..." if len(available) > 10 else ""
+        raise typer.BadParameter(
+            f"Unknown attack ID(s): {', '.join(missing_ids)}. "
+            f"Available attack IDs: {sample}{suffix}"
+        )
+
+    selected_attacks, skipped_attacks = _filter_attacks_for_capabilities(
+        filtered_attacks,
+        capabilities=capabilities,
+    )
+    skipped_by_reason: dict[str, int] = {}
+    for item in skipped_attacks:
+        reason = str(item.get("reason", "unknown"))
+        skipped_by_reason[reason] = skipped_by_reason.get(reason, 0) + 1
+
+    summary: dict[str, Any] = {
+        "attack_bundles": requested_bundles,
+        "resolved_categories": resolved_categories_safe,
+        "tier": tier,
+        "attacks_candidate": len(attacks_candidate),
+        "attacks_selected": len(selected_attacks),
+        "skipped_attacks": len(skipped_attacks),
+        "skipped_by_reason": skipped_by_reason,
+    }
+    if requested_ids:
+        summary["requested_attack_ids"] = requested_ids
+
+    return selected_attacks, skipped_attacks, summary
+
+
 @dataclass
 class TestResult:
     """Result of a single test within a phase."""
@@ -454,6 +578,8 @@ def run_with_pack(
     name: str | None = None,
     test_filter: str | None = None,
     baseline_repeat: int | None = None,
+    attack_ids: list[str] | None = None,
+    pack_override: Pack | None = None,
 ) -> Any:
     """Run agent with an evaluation.
 
@@ -472,10 +598,15 @@ def run_with_pack(
         name: Name for this run.
         test_filter: Optional test ID to filter to a single test.
         baseline_repeat: Optional number of baseline runs for consistency analysis.
+        attack_ids: Optional list of security attack IDs to run (filters security phase).
+        pack_override: Optional in-memory pack override. When provided, this pack is run
+            directly instead of loading by name/path.
     """
     # JSON output implies quiet mode (suppress all human-readable output)
     if json_output:
         quiet = True
+
+    attack_ids = _normalize_attack_ids(attack_ids)
 
     # Clear any previously collected security events
     _clear_security_events()
@@ -488,7 +619,17 @@ def run_with_pack(
     security_mode = _detect_agent_security_mode(target)
 
     # Load the eval configuration (internally still called "pack")
-    pack = _load_pack(pack_name)
+    if pack_override is not None:
+        pack = pack_override
+    else:
+        pack = _load_pack(pack_name)
+
+    has_pack_security_phase = any(p.type.value == "security" for p in pack.phases)
+    if attack_ids and not has_pack_security_phase and security_mode != "agent_input":
+        raise typer.BadParameter(
+            "--attack-id requires an evaluation with a security phase "
+            "(or an agent configured with security_mode='agent_input')."
+        )
 
     # Override baseline phase runs if --baseline-repeat is specified
     if baseline_repeat is not None and baseline_repeat >= 1:
@@ -622,12 +763,39 @@ def run_with_pack(
         attack_configs=_security_ctx.attack_configs,
     )
 
+    def _get_attacks_for_pack_filtered(
+        *,
+        attack_categories: list[str | None] = None,
+        attack_limit: int | None = None,
+        security_config: Any | None = None,
+        agent_capabilities: list[str | None] = None,
+    ) -> list[dict[str, Any]]:
+        attacks = _get_attacks_for_pack(
+            attack_categories=attack_categories,
+            attack_limit=attack_limit,
+            security_config=security_config,
+            agent_capabilities=agent_capabilities,
+        )
+        filtered, _ = _filter_attacks_by_ids(attacks, attack_ids)
+        return filtered
+
+    def _get_custom_attacks_for_phase_filtered(
+        security_phase: Any,
+        attack_configs: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        attacks = _get_custom_attacks_for_phase(
+            security_phase,
+            attack_configs=attack_configs,
+        )
+        filtered, _ = _filter_attacks_by_ids(attacks, attack_ids)
+        return filtered
+
     # Create initial invoker for capability probing
     invoker = create_single_turn_invoker(
         invoker_config,
         invoker_context,
-        get_attacks_fn=_get_attacks_for_pack,
-        get_custom_attacks_fn=_get_custom_attacks_for_phase,
+        get_attacks_fn=_get_attacks_for_pack_filtered,
+        get_custom_attacks_fn=_get_custom_attacks_for_phase_filtered,
         filter_attacks_fn=_filter_attacks_for_capabilities,
         resolve_categories_fn=_resolve_attack_categories,
         capability_to_list_fn=_capability_dict_to_list,
@@ -643,6 +811,14 @@ def run_with_pack(
     finally:
         capabilities = _infer_agent_capabilities(agent_metadata, target_source, probe_events=probe_events)
 
+    preselected_security_attacks, preselected_skipped_attacks, security_selection_summary = _prepare_security_selection(
+        pack=pack,
+        capabilities=capabilities,
+        attack_ids=attack_ids,
+    )
+    if security_selection_summary is not None:
+        capabilities["security_selection"] = security_selection_summary
+
     # Rebuild config and invoker with final capability profile
     invoker_config = InvokerConfig(
         target=target,
@@ -656,8 +832,8 @@ def run_with_pack(
     invoker = create_single_turn_invoker(
         invoker_config,
         invoker_context,
-        get_attacks_fn=_get_attacks_for_pack,
-        get_custom_attacks_fn=_get_custom_attacks_for_phase,
+        get_attacks_fn=_get_attacks_for_pack_filtered,
+        get_custom_attacks_fn=_get_custom_attacks_for_phase_filtered,
         filter_attacks_fn=_filter_attacks_for_capabilities,
         resolve_categories_fn=_resolve_attack_categories,
         capability_to_list_fn=_capability_dict_to_list,
@@ -703,63 +879,37 @@ def run_with_pack(
     if security_mode == "agent_input":
         # Agent-input mode: Run attacks as direct agent inputs
         # This tests the full security stack including any input filtering
-        security_phase = None
-        for p in pack.phases:
-            if p.type.value == "security":
-                security_phase = p
-                break
+        attacks = list(preselected_security_attacks)
+        skipped_attacks = list(preselected_skipped_attacks)
 
-        resolved_categories_safe: list[str] | None = None
-        requested_bundles: list[str] = []
-        tier: str | None = None
-
-        if security_phase:
-            caps_list = _capability_dict_to_list(capabilities)
-            resolved_categories = _resolve_attack_categories(
-                attack_categories=security_phase.attack_categories,
-                attack_bundles=getattr(security_phase, "attack_bundles", None),
+        has_security_phase = any(p.type.value == "security" for p in pack.phases)
+        if not has_security_phase:
+            candidate_attacks = _get_attacks_for_pack(attack_limit=6)
+            attacks, matched_ids = _filter_attacks_by_ids(candidate_attacks, attack_ids)
+            if attack_ids:
+                missing_ids = sorted(set(attack_ids) - matched_ids)
+                if missing_ids:
+                    available = sorted(
+                        {
+                            str(a.get("attack_id", "")).strip()
+                            for a in candidate_attacks
+                            if str(a.get("attack_id", "")).strip()
+                        }
+                    )
+                    sample = ", ".join(available[:10])
+                    suffix = "..." if len(available) > 10 else ""
+                    raise typer.BadParameter(
+                        f"Unknown attack ID(s): {', '.join(missing_ids)}. "
+                        f"Available attack IDs: {sample}{suffix}"
+                    )
+            attacks, skipped_attacks = _filter_attacks_for_capabilities(
+                attacks,
                 capabilities=capabilities,
             )
-            if isinstance(resolved_categories, list):
-                resolved_categories_safe = [str(c) for c in resolved_categories if str(c).strip()]
 
-            raw_bundles = getattr(security_phase, "attack_bundles", None)
-            if isinstance(raw_bundles, list):
-                requested_bundles = [str(b) for b in raw_bundles if str(b).strip()]
-
-            if getattr(security_phase, "security_config", None) is not None:
-                tier = getattr(security_phase.security_config, "tier", None)
-
-            attacks = _get_attacks_for_pack(
-                attack_categories=resolved_categories,
-                attack_limit=security_phase.attack_limit,
-                security_config=security_phase.security_config,
-                agent_capabilities=caps_list if caps_list else None,
-            )
-            attacks.extend(_get_custom_attacks_for_phase(security_phase))
-        else:
-            attacks = _get_attacks_for_pack(attack_limit=6)
-
-        attacks_candidate = list(attacks)
-        attacks, skipped_attacks = _filter_attacks_for_capabilities(attacks, capabilities=capabilities)
         if skipped_attacks:
             eval_result.report.skipped.setdefault("security_attacks", [])
             eval_result.report.skipped["security_attacks"].extend(skipped_attacks)
-
-        # Persist a small, user-interpretable applicability summary alongside capabilities.
-        skipped_by_reason: dict[str, int] = {}
-        for item in skipped_attacks:
-            reason = str(item.get("reason", "unknown"))
-            skipped_by_reason[reason] = skipped_by_reason.get(reason, 0) + 1
-        capabilities["security_selection"] = {
-            "attack_bundles": requested_bundles,
-            "resolved_categories": resolved_categories_safe,
-            "tier": tier,
-            "attacks_candidate": len(attacks_candidate),
-            "attacks_selected": len(attacks),
-            "skipped_attacks": len(skipped_attacks),
-            "skipped_by_reason": skipped_by_reason,
-        }
 
         # Store attack configs for evaluation
         for attack in attacks:
@@ -878,6 +1028,7 @@ def _infer_agent_capabilities(
         "llm": profile.llm,
         "http": profile.http,
         "web_fetch": profile.web_fetch,
+        "code_execution": profile.code_execution,
         "mcp": profile.mcp,
         "tool_calling": profile.tool_calling,
         "multi_turn": profile.multi_turn,

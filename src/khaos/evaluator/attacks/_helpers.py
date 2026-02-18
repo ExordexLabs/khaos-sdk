@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from khaos.security.models import AttackTier, AttackType, SecurityAttack
+from khaos.capabilities import normalize_capability
 
 # Import all category tuples from sibling modules
 from khaos.evaluator.attacks.injection import (
@@ -163,6 +164,49 @@ SEVERITY_WEIGHTS = {
 # All category names for iteration
 ALL_CATEGORIES = list(ATTACKS_BY_CATEGORY.keys())
 
+
+def _capability_aliases(capability: str) -> set[str]:
+    """Expand a capability value into normalized aliases."""
+    raw = str(capability).strip().lower()
+    if not raw:
+        return set()
+    normalized = normalize_capability(raw)
+    return {raw, raw.replace("-", "_"), normalized, normalized.replace("-", "_")}
+
+
+def _normalize_capability_set(agent_capabilities: list[str] | None) -> set[str] | None:
+    """Normalize an optional capability list into an alias lookup set."""
+    if agent_capabilities is None:
+        return None
+
+    result: set[str] = set()
+    for capability in agent_capabilities:
+        result.update(_capability_aliases(str(capability)))
+    return result
+
+
+def _attack_matches_capabilities(
+    attack: SecurityAttack,
+    capability_set: set[str] | None,
+) -> bool:
+    """Check whether attack required capabilities are satisfied."""
+    if capability_set is None:
+        return True
+
+    required_caps: list[str] = []
+    legacy = attack.metadata.get("required_capability")
+    if isinstance(legacy, str) and legacy:
+        required_caps.append(legacy)
+    required_list = attack.metadata.get("required_capabilities")
+    if isinstance(required_list, list):
+        required_caps.extend([str(c) for c in required_list if str(c).strip()])
+
+    for required in required_caps:
+        aliases = _capability_aliases(required)
+        if not any(alias in capability_set for alias in aliases):
+            return False
+    return True
+
 def get_canary_attacks(
     categories: list[str] | None = None,
     agent_capabilities: list[str] | None = None,
@@ -180,18 +224,7 @@ def get_canary_attacks(
     Returns:
         List of canary attacks, one per category (if available).
     """
-    def _meets_capability_requirements(attack: SecurityAttack) -> bool:
-        if agent_capabilities is None:
-            return True
-        required_caps: list[str] = []
-        legacy = attack.metadata.get("required_capability")
-        if isinstance(legacy, str) and legacy:
-            required_caps.append(legacy)
-        required_list = attack.metadata.get("required_capabilities")
-        if isinstance(required_list, list):
-            required_caps.extend([str(c) for c in required_list if str(c).strip()])
-        return all(cap in agent_capabilities for cap in required_caps)
-
+    capability_set = _normalize_capability_set(agent_capabilities)
     target_categories = categories or ALL_CATEGORIES
     canaries: list[SecurityAttack] = []
 
@@ -199,7 +232,7 @@ def get_canary_attacks(
         category_attacks = ATTACKS_BY_CATEGORY.get(category, ())
         for attack in category_attacks:
             if attack.metadata.get("is_canary"):
-                if not _meets_capability_requirements(attack):
+                if not _attack_matches_capabilities(attack, capability_set):
                     continue
                 canaries.append(attack)
                 break  # Only one canary per category
@@ -221,18 +254,7 @@ def get_standard_attacks(
     Returns:
         List of attacks, severity-ordered within each category.
     """
-    def _meets_capability_requirements(attack: SecurityAttack) -> bool:
-        if agent_capabilities is None:
-            return True
-        required_caps: list[str] = []
-        legacy = attack.metadata.get("required_capability")
-        if isinstance(legacy, str) and legacy:
-            required_caps.append(legacy)
-        required_list = attack.metadata.get("required_capabilities")
-        if isinstance(required_list, list):
-            required_caps.extend([str(c) for c in required_list if str(c).strip()])
-        return all(cap in agent_capabilities for cap in required_caps)
-
+    capability_set = _normalize_capability_set(agent_capabilities)
     target_categories = categories or ALL_CATEGORIES
     attacks: list[SecurityAttack] = []
 
@@ -240,7 +262,7 @@ def get_standard_attacks(
         category_attacks = list(ATTACKS_BY_CATEGORY.get(category, ()))
 
         # Filter by capabilities
-        category_attacks = [a for a in category_attacks if _meets_capability_requirements(a)]
+        category_attacks = [a for a in category_attacks if _attack_matches_capabilities(a, capability_set)]
 
         # Sort by severity (descending) then complexity (ascending)
         sorted_attacks = sorted(
@@ -320,25 +342,14 @@ def get_followup_attacks(
     max_attacks: int = 5,
 ) -> list[SecurityAttack]:
     """Get follow-up attacks for a category after canary was compromised."""
-    def _meets_capability_requirements(attack: SecurityAttack) -> bool:
-        if agent_capabilities is None:
-            return True
-        required_caps: list[str] = []
-        legacy = attack.metadata.get("required_capability")
-        if isinstance(legacy, str) and legacy:
-            required_caps.append(legacy)
-        required_list = attack.metadata.get("required_capabilities")
-        if isinstance(required_list, list):
-            required_caps.extend([str(c) for c in required_list if str(c).strip()])
-        return all(cap in agent_capabilities for cap in required_caps)
-
+    capability_set = _normalize_capability_set(agent_capabilities)
     category_attacks = list(ATTACKS_BY_CATEGORY.get(category, ()))
 
     # Filter out already run attacks
     remaining = [a for a in category_attacks if a.attack_id not in already_run]
 
     # Filter by capabilities
-    remaining = [a for a in remaining if _meets_capability_requirements(a)]
+    remaining = [a for a in remaining if _attack_matches_capabilities(a, capability_set)]
 
     # Order by severity and return top N
     ordered = order_attacks_by_severity(remaining)

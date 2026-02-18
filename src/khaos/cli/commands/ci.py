@@ -507,6 +507,7 @@ def ci(
         result = run_with_pack(
             target=str(target_path),
             pack_name=selected_eval,
+            pack_override=None,
             python=python,
             extra_env=extra_env,
             timeout=timeout,

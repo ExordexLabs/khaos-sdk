@@ -12,6 +12,7 @@ Usage:
     khaos run my-agent --eval baseline    # Baseline only (no faults/attacks)
     khaos run my-agent --inputs tests.yaml # Run baseline on custom inputs
     khaos run my-agent --eval full-eval --test math-reasoning  # Run single test
+    khaos run my-agent --eval security --attack-id prompt_injection_directive_override  # Replay one attack
 """
 
 from __future__ import annotations
@@ -37,6 +38,21 @@ class _CustomInputsSpec:
     items: list[Any]
     is_file: bool
     source: str
+
+
+def _parse_attack_ids(values: list[str]) -> list[str]:
+    """Normalize --attack-id values, supporting repeated flags or comma-separated IDs."""
+    parsed: list[str] = []
+    seen: set[str] = set()
+    for raw in values:
+        for part in str(raw).split(","):
+            attack_id = part.strip()
+            if not attack_id or attack_id in seen:
+                continue
+            seen.add(attack_id)
+            parsed.append(attack_id)
+    return parsed
+
 
 def _load_custom_inputs(spec: str) -> _CustomInputsSpec:
     """Load custom inputs from a raw prompt or a YAML/JSON file path.
@@ -271,6 +287,11 @@ def run(
         dir_okay=False,
         help="Custom attack payloads YAML file.",
     ),
+    attack_id: list[str] = typer.Option(
+        [],
+        "--attack-id",
+        help="Run only specific security attack ID(s). Repeat or pass comma-separated values.",
+    ),
     # Input options (custom prompts)
     inputs: str | None = typer.Option(
         None,
@@ -365,6 +386,9 @@ def run(
         # Run a single test from an evaluation
         khaos run my-agent --eval full-eval --test math-reasoning
 
+        # Replay one security attack ID
+        khaos run my-agent --eval security --attack-id prompt_injection_directive_override
+
         # Disable security tests
         khaos run my-agent --no-security
 
@@ -422,10 +446,12 @@ def run(
     custom_eval_inputs = _as_pack_inputs(loaded_inputs) if loaded_inputs is not None else None
     if loaded_inputs is not None and custom_eval_inputs is not None and not custom_eval_inputs:
         raise typer.BadParameter(f"No usable inputs found in '{inputs}'.")
+    selected_attack_ids = _parse_attack_ids(attack_id)
 
     run_with_pack(
         target=str(target_path),
         pack_name=eval_name,
+        pack_override=None,
         python=python,
         extra_env=extra_env,
         timeout=timeout,
@@ -438,4 +464,5 @@ def run(
         name=name,
         test_filter=test,
         baseline_repeat=baseline_repeat,
+        attack_ids=selected_attack_ids if selected_attack_ids else None,
     )

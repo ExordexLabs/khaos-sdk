@@ -1,0 +1,312 @@
+taxonomy_version: 1.0.0-draft
+schema_version: taxonomy.graph.v1
+released_at: "2026-02-14"
+status: draft
+
+roots:
+  - id: model
+    title: Model Surface
+    description: Bare-LLM behavior under adversarial or ambiguous input with no external tools, memory stores, or environment side effects.
+  - id: agent
+    title: Agent Surface
+    description: End-to-end agent system behavior where an LLM operates inside scaffolding such as planners, memory, runtimes, and environment interfaces.
+  - id: skill
+    title: Skill Surface
+    description: Safety and trust properties of reusable skill artifacts (for example SKILL.md files and bundled scripts) that can modify agent behavior.
+  - id: tool
+    title: Tool Surface
+    description: Tool selection, argument safety, authorization, and output trust decisions.
+  - id: mcp
+    title: MCP Surface
+    description: MCP server trust, schema integrity, capability boundaries, and protocol semantics.
+  - id: fault
+    title: Fault Surface
+    description: Resilience behavior under latency, outages, inconsistency, and degraded infrastructure.
+
+branches:
+  - id: model.instruction_integrity
+    root: model
+    title: Instruction Integrity
+    objective: Ensure instruction hierarchy is preserved under direct and obfuscated override attempts within pure prompt/context interaction.
+    capability_tags: [llm]
+    primary_failure_signals: [policy_bypass, instruction_override]
+
+  - id: model.extraction_resistance
+    root: model
+    title: Extraction Resistance
+    objective: Prevent disclosure of protected prompt, policy, secrets, or sensitive user data from the model context itself.
+    capability_tags: [llm]
+    primary_failure_signals: [prompt_leakage, secret_exposure, pii_exposure]
+
+  - id: model.context_boundary_control
+    root: model
+    title: Context Boundary Control
+    objective: Maintain safety and task boundaries under long-context pressure and context poisoning without relying on external memory layers.
+    capability_tags: [llm]
+    primary_failure_signals: [context_poisoning, boundary_drift]
+
+  - id: model.output_safety_compliance
+    root: model
+    title: Output Safety Compliance
+    objective: Keep output format and policy compliance under adversarial framing and pressure at the model response layer.
+    capability_tags: [llm]
+    primary_failure_signals: [unsafe_output, format_escape]
+
+  - id: agent.plan_execution_integrity
+    root: agent
+    title: Plan Execution Integrity
+    objective: Ensure plans are not hijacked by malicious intermediate state, tool observations, or environment feedback in the agent runtime.
+    capability_tags: [multi_turn, tool_calling, orchestration, environment]
+    primary_failure_signals: [plan_hijack, unauthorized_step]
+
+  - id: agent.state_memory_integrity
+    root: agent
+    title: State and Memory Integrity
+    objective: Prevent persistent poisoning or unsafe carry-over in session state, external memory, and retrieval layers.
+    capability_tags: [multi_turn, orchestration, environment]
+    primary_failure_signals: [memory_poisoning, state_corruption]
+
+  - id: agent.workflow_guardrails
+    root: agent
+    title: Workflow Guardrails
+    objective: Ensure guardrails remain active across workflow transitions, retries, and orchestration boundaries.
+    capability_tags: [multi_turn, tool_calling, orchestration, environment]
+    primary_failure_signals: [guardrail_drop, workflow_hijack]
+
+  - id: agent.autonomy_authority_bounds
+    root: agent
+    title: Autonomy Authority Bounds
+    objective: Keep autonomous action scope bounded to explicit user intent and policy across tools, memory, and environment actions.
+    capability_tags: [tool_calling, multi_turn, orchestration, environment]
+    primary_failure_signals: [scope_escalation, unauthorized_action]
+
+  - id: skill.provenance_integrity
+    root: skill
+    title: Skill Provenance Integrity
+    objective: Ensure only trusted and policy-allowed skill artifacts are discovered, installed, and loaded.
+    capability_tags: [skills, orchestration]
+    primary_failure_signals: [provenance_spoofing, untrusted_skill_load]
+
+  - id: skill.instruction_payload_safety
+    root: skill
+    title: Skill Instruction Payload Safety
+    objective: Prevent malicious skill markdown content from overriding policy or introducing adversarial behavior.
+    capability_tags: [skills, llm, orchestration]
+    primary_failure_signals: [skill_prompt_injection, policy_bypass]
+
+  - id: skill.execution_dependency_safety
+    root: skill
+    title: Skill Execution and Dependency Safety
+    objective: Constrain skill scripts, dependencies, and side effects to approved execution boundaries.
+    capability_tags: [skills, script_execution, package_manager, environment]
+    primary_failure_signals: [unsafe_skill_execution, dependency_compromise, privilege_escalation]
+
+  - id: skill.data_access_boundaries
+    root: skill
+    title: Skill Data Access Boundaries
+    objective: Prevent skills from accessing or exfiltrating data beyond declared and approved scope.
+    capability_tags: [skills, files, network, environment]
+    primary_failure_signals: [skill_data_exfiltration, unauthorized_data_access]
+
+  - id: tool.selection_integrity
+    root: tool
+    title: Tool Selection Integrity
+    objective: Ensure selected tools are relevant, trusted, and policy-allowed for the request.
+    capability_tags: [tool_calling]
+    primary_failure_signals: [tool_misselection, unsafe_tool_choice]
+
+  - id: tool.argument_integrity
+    root: tool
+    title: Tool Argument Integrity
+    objective: Prevent injection and unsafe transformations in tool arguments and payloads.
+    capability_tags: [tool_calling]
+    primary_failure_signals: [argument_injection, parameter_tampering]
+
+  - id: tool.authorization_scope
+    root: tool
+    title: Tool Authorization Scope
+    objective: Enforce least privilege on tool actions and prevent capability abuse.
+    capability_tags: [tool_calling, files, db, email]
+    primary_failure_signals: [privilege_escalation, unauthorized_action]
+
+  - id: tool.output_trust_calibration
+    root: tool
+    title: Tool Output Trust Calibration
+    objective: Treat tool outputs as untrusted input unless validated and policy-safe.
+    capability_tags: [tool_calling, web_fetch, rag]
+    primary_failure_signals: [indirect_injection, unsafe_follow_on_action]
+
+  - id: mcp.server_identity_trust
+    root: mcp
+    title: MCP Server Identity and Trust
+    objective: Verify server identity and trust policy before using MCP resources or tools.
+    capability_tags: [mcp]
+    primary_failure_signals: [server_impersonation, trust_bypass]
+
+  - id: mcp.capability_boundary_enforcement
+    root: mcp
+    title: MCP Capability Boundary Enforcement
+    objective: Ensure MCP-declared capabilities cannot exceed allowed local policy.
+    capability_tags: [mcp]
+    primary_failure_signals: [capability_escalation, policy_bypass]
+
+  - id: mcp.resource_integrity
+    root: mcp
+    title: MCP Resource Integrity
+    objective: Detect poisoned resources and reject unsafe resource instructions.
+    capability_tags: [mcp]
+    primary_failure_signals: [resource_poisoning, indirect_injection]
+
+  - id: mcp.schema_contract_integrity
+    root: mcp
+    title: MCP Schema and Contract Integrity
+    objective: Validate schema and contract conformance before actioning MCP payloads.
+    capability_tags: [mcp, tool_calling]
+    primary_failure_signals: [schema_confusion, malformed_action]
+
+  - id: fault.latency_timeout_tolerance
+    root: fault
+    title: Latency and Timeout Tolerance
+    objective: Maintain correct behavior under latency spikes, timeouts, and partial stalls.
+    capability_tags: [llm, http, mcp]
+    primary_failure_signals: [timeout_failure, degraded_correctness]
+
+  - id: fault.partial_failure_tolerance
+    root: fault
+    title: Partial Failure Tolerance
+    objective: Degrade gracefully when one dependency fails while others remain available.
+    capability_tags: [http, tool_calling, mcp]
+    primary_failure_signals: [cascade_failure, brittle_dependency]
+
+  - id: fault.consistency_idempotency
+    root: fault
+    title: Consistency and Idempotency
+    objective: Avoid duplicate or conflicting actions under retries and intermittent errors.
+    capability_tags: [tool_calling, db, files]
+    primary_failure_signals: [duplicate_action, state_inconsistency]
+
+  - id: fault.recovery_degradation_control
+    root: fault
+    title: Recovery and Degradation Control
+    objective: Recover to stable operation while preserving safety and bounded latency impact.
+    capability_tags: [llm, http, tool_calling, mcp]
+    primary_failure_signals: [failed_recovery, unsafe_recovery]
+
+edges:
+  - from: model
+    to: model.instruction_integrity
+    type: contains
+  - from: model
+    to: model.extraction_resistance
+    type: contains
+  - from: model
+    to: model.context_boundary_control
+    type: contains
+  - from: model
+    to: model.output_safety_compliance
+    type: contains
+
+  - from: agent
+    to: agent.plan_execution_integrity
+    type: contains
+  - from: agent
+    to: agent.state_memory_integrity
+    type: contains
+  - from: agent
+    to: agent.workflow_guardrails
+    type: contains
+  - from: agent
+    to: agent.autonomy_authority_bounds
+    type: contains
+
+  - from: skill
+    to: skill.provenance_integrity
+    type: contains
+  - from: skill
+    to: skill.instruction_payload_safety
+    type: contains
+  - from: skill
+    to: skill.execution_dependency_safety
+    type: contains
+  - from: skill
+    to: skill.data_access_boundaries
+    type: contains
+
+  - from: tool
+    to: tool.selection_integrity
+    type: contains
+  - from: tool
+    to: tool.argument_integrity
+    type: contains
+  - from: tool
+    to: tool.authorization_scope
+    type: contains
+  - from: tool
+    to: tool.output_trust_calibration
+    type: contains
+
+  - from: mcp
+    to: mcp.server_identity_trust
+    type: contains
+  - from: mcp
+    to: mcp.capability_boundary_enforcement
+    type: contains
+  - from: mcp
+    to: mcp.resource_integrity
+    type: contains
+  - from: mcp
+    to: mcp.schema_contract_integrity
+    type: contains
+
+  - from: fault
+    to: fault.latency_timeout_tolerance
+    type: contains
+  - from: fault
+    to: fault.partial_failure_tolerance
+    type: contains
+  - from: fault
+    to: fault.consistency_idempotency
+    type: contains
+  - from: fault
+    to: fault.recovery_degradation_control
+    type: contains
+
+  - from: model.context_boundary_control
+    to: agent.state_memory_integrity
+    type: related_to
+    rationale: Context poisoning and memory poisoning are coupled in multi-turn agents.
+
+  - from: tool.output_trust_calibration
+    to: mcp.resource_integrity
+    type: related_to
+    rationale: Both test trust decisions over untrusted external tool/resource outputs.
+
+  - from: tool.authorization_scope
+    to: agent.autonomy_authority_bounds
+    type: related_to
+    rationale: Tool-level least privilege and agent-level authority bounds must align.
+
+  - from: skill.instruction_payload_safety
+    to: model.instruction_integrity
+    type: related_to
+    rationale: Malicious skill markdown often manifests as instruction hierarchy attacks against the underlying model.
+
+  - from: skill.provenance_integrity
+    to: mcp.server_identity_trust
+    type: related_to
+    rationale: Both require source trust validation before adopting externally supplied capabilities.
+
+  - from: skill.execution_dependency_safety
+    to: tool.authorization_scope
+    type: related_to
+    rationale: Skill script execution must obey the same least-privilege controls as tool actions.
+
+  - from: skill.data_access_boundaries
+    to: agent.autonomy_authority_bounds
+    type: related_to
+    rationale: Skill-level data permissions must remain subordinate to agent-level authority boundaries.
+
+  - from: fault.partial_failure_tolerance
+    to: fault.recovery_degradation_control
+    type: depends_on
+    rationale: Controlled recovery requires correct handling of partial failures first.

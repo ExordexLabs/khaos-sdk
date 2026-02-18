@@ -29,6 +29,7 @@ from khaos.security.scoring import (
     classify_security_response,
     SecurityClassification,
 )
+from khaos.capabilities import normalize_capability
 
 from ..console import get_console
 from ..utils.config import merge_env_for_subprocess
@@ -108,6 +109,30 @@ def attack_needs_mcp(attack_type: str) -> bool:
         "mcp_multi_server_confusion",
         "mcp_schema_manipulation",
     }
+
+
+def _capability_aliases(capability: str) -> set[str]:
+    """Expand a capability into normalized aliases for robust matching."""
+    raw = str(capability).strip().lower()
+    if not raw:
+        return set()
+    normalized = normalize_capability(raw)
+    return {raw, raw.replace("-", "_"), normalized, normalized.replace("-", "_")}
+
+
+def _expand_enabled_capabilities(capabilities: dict[str, Any] | None) -> set[str]:
+    """Flatten boolean capability flags into a normalized alias set."""
+    enabled: set[str] = set()
+    for key, value in (capabilities or {}).items():
+        if isinstance(value, bool) and value:
+            enabled.update(_capability_aliases(str(key)))
+    return enabled
+
+
+def _has_capability(enabled_capabilities: set[str], capability: str) -> bool:
+    """Check whether a capability (or any of its aliases) is enabled."""
+    aliases = _capability_aliases(capability)
+    return any(alias in enabled_capabilities for alias in aliases)
 
 
 def extract_response_content(raw_response: str) -> str:
@@ -422,12 +447,12 @@ def filter_attacks_for_capabilities(
     Returns:
         Tuple of (selected_attacks, skipped_attacks)
     """
-    caps = capabilities or {}
-    has_llm = bool(caps.get("llm"))
-    has_http = bool(caps.get("http"))
-    has_mcp = bool(caps.get("mcp"))
-    has_tool_calling = bool(caps.get("tool_calling"))
-    has_rag = bool(caps.get("rag"))
+    enabled_caps = _expand_enabled_capabilities(capabilities)
+    has_llm = _has_capability(enabled_caps, "llm")
+    has_http = _has_capability(enabled_caps, "http")
+    has_mcp = _has_capability(enabled_caps, "mcp")
+    has_tool_calling = _has_capability(enabled_caps, "tool-calling")
+    has_rag = _has_capability(enabled_caps, "rag")
 
     selected: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
@@ -460,26 +485,30 @@ def filter_attacks_for_capabilities(
             skipped.append({"attack_id": attack_id, "attack_type": attack_type, "reason": "agent_has_no_mcp"})
             continue
 
-        if required_cap == "rag" and not has_rag:
+        required_cap_norm = ""
+        if isinstance(required_cap, str) and required_cap:
+            required_cap_norm = normalize_capability(required_cap)
+
+        if required_cap_norm == "rag" and not has_rag:
             skipped.append({"attack_id": attack_id, "attack_type": attack_type, "reason": "agent_has_no_rag"})
             continue
 
-        if required_cap == "mcp" and not has_mcp:
+        if required_cap_norm == "mcp" and not has_mcp:
             skipped.append({"attack_id": attack_id, "attack_type": attack_type, "reason": "agent_has_no_mcp"})
             continue
 
-        if required_cap == "tool_calling" and not (has_tool_calling or has_mcp):
+        if required_cap_norm == "tool-calling" and not (has_tool_calling or has_mcp):
             skipped.append({"attack_id": attack_id, "attack_type": attack_type, "reason": "agent_has_no_tools"})
             continue
 
-        if required_cap == "http" and not has_http:
+        if required_cap_norm == "http" and not has_http:
             skipped.append({"attack_id": attack_id, "attack_type": attack_type, "reason": "agent_has_no_http"})
             continue
 
         # Handle required_capabilities list
         if isinstance(required_caps, list) and required_caps:
             required_set = {str(c).strip() for c in required_caps if str(c).strip()}
-            missing = [cap for cap in sorted(required_set) if not bool(caps.get(cap))]
+            missing = [cap for cap in sorted(required_set) if not _has_capability(enabled_caps, cap)]
             if missing:
                 skipped.append({
                     "attack_id": attack_id,
@@ -490,8 +519,8 @@ def filter_attacks_for_capabilities(
 
         # Generic capability requirements
         if isinstance(required_cap, str) and required_cap:
-            if required_cap not in {"rag", "mcp", "tool_calling", "http"}:
-                if not bool(caps.get(required_cap)):
+            if required_cap_norm not in {"rag", "mcp", "tool-calling", "http"}:
+                if not _has_capability(enabled_caps, required_cap):
                     skipped.append({
                         "attack_id": attack_id,
                         "attack_type": attack_type,

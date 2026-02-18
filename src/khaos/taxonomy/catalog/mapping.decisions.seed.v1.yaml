@@ -1,0 +1,2376 @@
+---
+schema_version: taxonomy.mapping_decision.v1
+taxonomy_version: 1.0.0-draft
+mapping_policy_version: 1.0.0-draft
+algorithm_version: map_v1_deterministic
+generated_at: '2026-02-14T23:30:29.277036+00:00'
+input_fingerprint: 43d5415d22f8ca59a2706bd15431750966782f061114c24008db7035fbd7ae46
+decisions:
+- idea_id: idea:model.instruction_override_direct
+  idea_version: 1
+  status: auto
+  primary_branch: model.instruction_integrity
+  primary_score: 0.832258
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.16129
+  second_best_branch: model.extraction_resistance
+  margin_to_second: 0.520493
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: model.instruction_integrity
+    score: 0.832258
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.16129
+  - branch_id: model.extraction_resistance
+    score: 0.311765
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.058824
+  - branch_id: model.output_safety_compliance
+    score: 0.306061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.030303
+  - branch_id: model.context_boundary_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: skill.instruction_payload_safety
+    score: 0.56875
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 1.0
+      lexical_overlap: 0.09375
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.306452
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.032258
+  - branch_id: fault.recovery_degradation_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: mcp.capability_boundary_enforcement
+    score: 0.256061
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 0.0
+      lexical_overlap: 0.030303
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.010811
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.054054
+  explanation: Primary branch 'model.instruction_integrity' selected with score=0.832,
+    margin=0.520 over next candidate; status=auto.
+- idea_id: idea:model.secret_extraction_contextual
+  idea_version: 1
+  status: auto
+  primary_branch: model.extraction_resistance
+  primary_score: 0.8375
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.1875
+  second_best_branch: model.output_safety_compliance
+  margin_to_second: 0.525735
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: model.extraction_resistance
+    score: 0.8375
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.1875
+  - branch_id: model.output_safety_compliance
+    score: 0.311765
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.058824
+  - branch_id: model.instruction_integrity
+    score: 0.305405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027027
+  - branch_id: model.context_boundary_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: skill.instruction_payload_safety
+    score: 0.305556
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027778
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.recovery_degradation_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: tool.selection_integrity
+    score: 0.011765
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.058824
+  - branch_id: skill.provenance_integrity
+    score: 0.011429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.057143
+  explanation: Primary branch 'model.extraction_resistance' selected with score=0.838,
+    margin=0.526 over next candidate; status=auto.
+- idea_id: idea:agent.plan_hijack_intermediate
+  idea_version: 1
+  status: auto
+  primary_branch: agent.plan_execution_integrity
+  primary_score: 0.835294
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.176471
+  second_best_branch: agent.autonomy_authority_bounds
+  margin_to_second: 0.530166
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: agent.plan_execution_integrity
+    score: 0.835294
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.176471
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.305128
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.025641
+  - branch_id: agent.workflow_guardrails
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: agent.state_memory_integrity
+    score: 0.161765
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.058824
+  cross_root_candidates:
+  - branch_id: tool.argument_integrity
+    score: 0.163333
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.066667
+  - branch_id: fault.consistency_idempotency
+    score: 0.156452
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.032258
+  - branch_id: mcp.schema_contract_integrity
+    score: 0.156452
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.032258
+  - branch_id: tool.authorization_scope
+    score: 0.15625
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.03125
+  - branch_id: tool.selection_integrity
+    score: 0.155882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.029412
+  explanation: Primary branch 'agent.plan_execution_integrity' selected with score=0.835,
+    margin=0.530 over next candidate; status=auto.
+- idea_id: idea:agent.memory_poison_persistence
+  idea_version: 1
+  status: auto
+  primary_branch: agent.state_memory_integrity
+  primary_score: 0.825806
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.129032
+  second_best_branch: agent.plan_execution_integrity
+  margin_to_second: 0.514995
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: agent.state_memory_integrity
+    score: 0.825806
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.129032
+  - branch_id: agent.plan_execution_integrity
+    score: 0.310811
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.054054
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.305263
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.026316
+  - branch_id: agent.workflow_guardrails
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: model.context_boundary_control
+    score: 0.011429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.057143
+  - branch_id: mcp.resource_integrity
+    score: 0.006667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.033333
+  - branch_id: tool.output_trust_calibration
+    score: 0.006061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.030303
+  - branch_id: tool.selection_integrity
+    score: 0.006061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.030303
+  - branch_id: skill.provenance_integrity
+    score: 0.005882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.029412
+  explanation: Primary branch 'agent.state_memory_integrity' selected with score=0.826,
+    margin=0.515 over next candidate; status=auto.
+- idea_id: idea:tool.argument_injection_override
+  idea_version: 1
+  status: auto
+  primary_branch: tool.argument_integrity
+  primary_score: 0.828571
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.142857
+  second_best_branch: tool.output_trust_calibration
+  margin_to_second: 0.509821
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: tool.argument_integrity
+    score: 0.828571
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.142857
+  - branch_id: tool.output_trust_calibration
+    score: 0.31875
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.09375
+  - branch_id: tool.selection_integrity
+    score: 0.312121
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.060606
+  - branch_id: tool.authorization_scope
+    score: 0.30625
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.03125
+  cross_root_candidates:
+  - branch_id: agent.plan_execution_integrity
+    score: 0.310526
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.052632
+  - branch_id: mcp.schema_contract_integrity
+    score: 0.306452
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.032258
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.305128
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.025641
+  - branch_id: agent.workflow_guardrails
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.consistency_idempotency
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  explanation: Primary branch 'tool.argument_integrity' selected with score=0.829,
+    margin=0.510 over next candidate; status=auto.
+- idea_id: idea:tool.untrusted_output_follow_on
+  idea_version: 1
+  status: auto
+  primary_branch: tool.output_trust_calibration
+  primary_score: 0.837037
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.185185
+  second_best_branch: tool.argument_integrity
+  margin_to_second: 0.522222
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: tool.output_trust_calibration
+    score: 0.837037
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.185185
+  - branch_id: tool.argument_integrity
+    score: 0.314815
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.074074
+  - branch_id: tool.authorization_scope
+    score: 0.314286
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.071429
+  - branch_id: tool.selection_integrity
+    score: 0.306452
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.032258
+  cross_root_candidates:
+  - branch_id: agent.plan_execution_integrity
+    score: 0.311429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.057143
+  - branch_id: fault.consistency_idempotency
+    score: 0.307143
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.035714
+  - branch_id: mcp.schema_contract_integrity
+    score: 0.307143
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.035714
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.305556
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027778
+  - branch_id: agent.workflow_guardrails
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  explanation: Primary branch 'tool.output_trust_calibration' selected with score=0.837,
+    margin=0.522 over next candidate; status=auto.
+- idea_id: idea:mcp.server_identity_spoof
+  idea_version: 1
+  status: auto
+  primary_branch: mcp.server_identity_trust
+  primary_score: 0.84
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.2
+  second_best_branch: mcp.schema_contract_integrity
+  margin_to_second: 0.525185
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: mcp.server_identity_trust
+    score: 0.84
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.2
+  - branch_id: mcp.schema_contract_integrity
+    score: 0.314815
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.074074
+  - branch_id: mcp.capability_boundary_enforcement
+    score: 0.313333
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.066667
+  - branch_id: mcp.resource_integrity
+    score: 0.307143
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.035714
+  cross_root_candidates:
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.recovery_degradation_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: tool.output_trust_calibration
+    score: 0.013333
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.066667
+  - branch_id: model.extraction_resistance
+    score: 0.0125
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.0625
+  explanation: Primary branch 'mcp.server_identity_trust' selected with score=0.840,
+    margin=0.525 over next candidate; status=auto.
+- idea_id: idea:mcp.capability_claim_escalation
+  idea_version: 1
+  status: auto
+  primary_branch: mcp.capability_boundary_enforcement
+  primary_score: 0.846154
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.230769
+  second_best_branch: mcp.server_identity_trust
+  margin_to_second: 0.531868
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: mcp.capability_boundary_enforcement
+    score: 0.846154
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.230769
+  - branch_id: mcp.server_identity_trust
+    score: 0.314286
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.071429
+  - branch_id: mcp.resource_integrity
+    score: 0.307143
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.035714
+  - branch_id: mcp.schema_contract_integrity
+    score: 0.307143
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.035714
+  cross_root_candidates:
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.recovery_degradation_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: skill.instruction_payload_safety
+    score: 0.25625
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 0.0
+      lexical_overlap: 0.03125
+  - branch_id: model.instruction_integrity
+    score: 0.25
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 0.0
+      lexical_overlap: 0.0
+  explanation: Primary branch 'mcp.capability_boundary_enforcement' selected with
+    score=0.846, margin=0.532 over next candidate; status=auto.
+- idea_id: idea:fault.timeout_retry_safety
+  idea_version: 1
+  status: auto
+  primary_branch: fault.latency_timeout_tolerance
+  primary_score: 0.807407
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.037037
+  second_best_branch: fault.recovery_degradation_control
+  margin_to_second: 0.50051
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.807407
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.037037
+  - branch_id: fault.recovery_degradation_control
+    score: 0.306897
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.034483
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: fault.consistency_idempotency
+    score: 0.007692
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.038462
+  cross_root_candidates:
+  - branch_id: model.output_safety_compliance
+    score: 0.156897
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.034483
+  - branch_id: skill.instruction_payload_safety
+    score: 0.156667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.033333
+  - branch_id: model.context_boundary_control
+    score: 0.15625
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.03125
+  - branch_id: model.extraction_resistance
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: model.instruction_integrity
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  explanation: Primary branch 'fault.latency_timeout_tolerance' selected with score=0.807,
+    margin=0.501 over next candidate; status=auto.
+- idea_id: idea:fault.partial_outage_cascade
+  idea_version: 1
+  status: auto
+  primary_branch: fault.partial_failure_tolerance
+  primary_score: 0.82963
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.148148
+  second_best_branch: fault.recovery_degradation_control
+  margin_to_second: 0.52963
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.82963
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.148148
+  - branch_id: fault.recovery_degradation_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.157407
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.037037
+  - branch_id: fault.consistency_idempotency
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: tool.argument_integrity
+    score: 0.157692
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.038462
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: agent.plan_execution_integrity
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: agent.workflow_guardrails
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: mcp.schema_contract_integrity
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  explanation: Primary branch 'fault.partial_failure_tolerance' selected with score=0.830,
+    margin=0.530 over next candidate; status=auto.
+- idea_id: idea:skill.markdown_instruction_hijack
+  idea_version: 1
+  status: auto
+  primary_branch: skill.instruction_payload_safety
+  primary_score: 0.848276
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.241379
+  second_best_branch: skill.provenance_integrity
+  margin_to_second: 0.630094
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: skill.instruction_payload_safety
+    score: 0.848276
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.241379
+  - branch_id: skill.provenance_integrity
+    score: 0.218182
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.666667
+      lexical_overlap: 0.090909
+  - branch_id: skill.execution_dependency_safety
+    score: 0.106061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.030303
+  - branch_id: skill.data_access_boundaries
+    score: 0.105882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.029412
+  cross_root_candidates:
+  - branch_id: model.instruction_integrity
+    score: 0.361429
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 0.333333
+      lexical_overlap: 0.057143
+  - branch_id: mcp.capability_boundary_enforcement
+    score: 0.255882
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 0.0
+      lexical_overlap: 0.029412
+  - branch_id: model.output_safety_compliance
+    score: 0.112121
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.060606
+  - branch_id: model.extraction_resistance
+    score: 0.111429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.057143
+  - branch_id: agent.plan_execution_integrity
+    score: 0.110526
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.052632
+  explanation: Primary branch 'skill.instruction_payload_safety' selected with score=0.848,
+    margin=0.630 over next candidate; status=auto.
+- idea_id: idea:skill.script_dependency_backdoor
+  idea_version: 1
+  status: auto
+  primary_branch: skill.execution_dependency_safety
+  primary_score: 0.825806
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.129032
+  second_best_branch: skill.data_access_boundaries
+  margin_to_second: 0.670092
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: skill.execution_dependency_safety
+    score: 0.825806
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.129032
+  - branch_id: skill.data_access_boundaries
+    score: 0.155714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.028571
+  - branch_id: skill.instruction_payload_safety
+    score: 0.086429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.25
+      lexical_overlap: 0.057143
+  - branch_id: skill.provenance_integrity
+    score: 0.086429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.25
+      lexical_overlap: 0.057143
+  cross_root_candidates:
+  - branch_id: agent.plan_execution_integrity
+    score: 0.085256
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.25
+      lexical_overlap: 0.051282
+  - branch_id: agent.state_memory_integrity
+    score: 0.080556
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.25
+      lexical_overlap: 0.027778
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.075
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.25
+      lexical_overlap: 0.0
+  - branch_id: agent.workflow_guardrails
+    score: 0.075
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.25
+      lexical_overlap: 0.0
+  - branch_id: tool.authorization_scope
+    score: 0.0125
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.0625
+  explanation: Primary branch 'skill.execution_dependency_safety' selected with score=0.826,
+    margin=0.670 over next candidate; status=auto.
+- idea_id: idea:skill.registry_typosquat_provenance_spoof
+  idea_version: 1
+  status: auto
+  primary_branch: skill.provenance_integrity
+  primary_score: 0.830303
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.151515
+  second_best_branch: skill.instruction_payload_safety
+  margin_to_second: 0.524898
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: skill.provenance_integrity
+    score: 0.830303
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.151515
+  - branch_id: skill.instruction_payload_safety
+    score: 0.305405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027027
+  - branch_id: skill.data_access_boundaries
+    score: 0.161429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.057143
+  - branch_id: skill.execution_dependency_safety
+    score: 0.155714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.028571
+  cross_root_candidates:
+  - branch_id: agent.plan_execution_integrity
+    score: 0.154878
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.02439
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: agent.state_memory_integrity
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: agent.workflow_guardrails
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: tool.selection_integrity
+    score: 0.011429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.057143
+  explanation: Primary branch 'skill.provenance_integrity' selected with score=0.830,
+    margin=0.525 over next candidate; status=auto.
+- idea_id: idea:skill.signature_metadata_forgery
+  idea_version: 1
+  status: auto
+  primary_branch: skill.provenance_integrity
+  primary_score: 0.81875
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.09375
+  second_best_branch: skill.instruction_payload_safety
+  margin_to_second: 0.512868
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: skill.provenance_integrity
+    score: 0.81875
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.09375
+  - branch_id: skill.instruction_payload_safety
+    score: 0.305882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.029412
+  - branch_id: skill.execution_dependency_safety
+    score: 0.15625
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.03125
+  - branch_id: skill.data_access_boundaries
+    score: 0.156061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.030303
+  cross_root_candidates:
+  - branch_id: agent.state_memory_integrity
+    score: 0.155882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.029412
+  - branch_id: agent.plan_execution_integrity
+    score: 0.155263
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.026316
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: agent.workflow_guardrails
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: tool.output_trust_calibration
+    score: 0.0125
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.0625
+  explanation: Primary branch 'skill.provenance_integrity' selected with score=0.819,
+    margin=0.513 over next candidate; status=auto.
+- idea_id: idea:skill.transitive_source_confusion
+  idea_version: 1
+  status: auto
+  primary_branch: skill.provenance_integrity
+  primary_score: 0.722857
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 0.666667
+    lexical_overlap: 0.114286
+  second_best_branch: skill.instruction_payload_safety
+  margin_to_second: 0.50619
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: skill.provenance_integrity
+    score: 0.722857
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 0.666667
+      lexical_overlap: 0.114286
+  - branch_id: skill.instruction_payload_safety
+    score: 0.216667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.666667
+      lexical_overlap: 0.083333
+  - branch_id: skill.execution_dependency_safety
+    score: 0.211429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.666667
+      lexical_overlap: 0.057143
+  - branch_id: skill.data_access_boundaries
+    score: 0.111111
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.055556
+  cross_root_candidates:
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.115
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.075
+  - branch_id: agent.plan_execution_integrity
+    score: 0.104762
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.02381
+  - branch_id: agent.state_memory_integrity
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  - branch_id: agent.workflow_guardrails
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  - branch_id: model.extraction_resistance
+    score: 0.016216
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.081081
+  explanation: Primary branch 'skill.provenance_integrity' selected with score=0.723,
+    margin=0.506 over next candidate; status=auto.
+- idea_id: idea:skill.path_traversal_data_exfiltration
+  idea_version: 1
+  status: auto
+  primary_branch: skill.data_access_boundaries
+  primary_score: 0.829412
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.147059
+  second_best_branch: skill.execution_dependency_safety
+  margin_to_second: 0.618301
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: skill.data_access_boundaries
+    score: 0.829412
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.147059
+  - branch_id: skill.execution_dependency_safety
+    score: 0.211111
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.666667
+      lexical_overlap: 0.055556
+  - branch_id: skill.provenance_integrity
+    score: 0.110526
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.052632
+  - branch_id: skill.instruction_payload_safety
+    score: 0.105128
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.025641
+  cross_root_candidates:
+  - branch_id: agent.workflow_guardrails
+    score: 0.105556
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.027778
+  - branch_id: agent.plan_execution_integrity
+    score: 0.104651
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.023256
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  - branch_id: agent.state_memory_integrity
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  - branch_id: fault.consistency_idempotency
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  explanation: Primary branch 'skill.data_access_boundaries' selected with score=0.829,
+    margin=0.618 over next candidate; status=auto.
+- idea_id: idea:skill.hidden_network_exfiltration_channel
+  idea_version: 1
+  status: auto
+  primary_branch: skill.data_access_boundaries
+  primary_score: 0.812121
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.060606
+  second_best_branch: skill.execution_dependency_safety
+  margin_to_second: 0.612121
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: skill.data_access_boundaries
+    score: 0.812121
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.060606
+  - branch_id: skill.execution_dependency_safety
+    score: 0.2
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.666667
+      lexical_overlap: 0.0
+  - branch_id: skill.provenance_integrity
+    score: 0.105714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.028571
+  - branch_id: skill.instruction_payload_safety
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: agent.plan_execution_integrity
+    score: 0.105128
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.025641
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  - branch_id: agent.state_memory_integrity
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  - branch_id: agent.workflow_guardrails
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  - branch_id: model.extraction_resistance
+    score: 0.011429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.057143
+  explanation: Primary branch 'skill.data_access_boundaries' selected with score=0.812,
+    margin=0.612 over next candidate; status=auto.
+- idea_id: idea:skill.env_secret_scope_leak
+  idea_version: 1
+  status: auto
+  primary_branch: skill.data_access_boundaries
+  primary_score: 0.8375
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.1875
+  second_best_branch: skill.execution_dependency_safety
+  margin_to_second: 0.531944
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: skill.data_access_boundaries
+    score: 0.8375
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.1875
+  - branch_id: skill.execution_dependency_safety
+    score: 0.305556
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027778
+  - branch_id: skill.instruction_payload_safety
+    score: 0.155263
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.026316
+  - branch_id: skill.provenance_integrity
+    score: 0.155263
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.026316
+  cross_root_candidates:
+  - branch_id: agent.plan_execution_integrity
+    score: 0.165
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.075
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.159756
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.04878
+  - branch_id: agent.state_memory_integrity
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: agent.workflow_guardrails
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: model.extraction_resistance
+    score: 0.010526
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.052632
+  explanation: Primary branch 'skill.data_access_boundaries' selected with score=0.838,
+    margin=0.532 over next candidate; status=auto.
+- idea_id: idea:model.long_context_boundary_drift
+  idea_version: 1
+  status: auto
+  primary_branch: model.context_boundary_control
+  primary_score: 0.836364
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.181818
+  second_best_branch: model.extraction_resistance
+  margin_to_second: 0.512835
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: model.context_boundary_control
+    score: 0.836364
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.181818
+  - branch_id: model.extraction_resistance
+    score: 0.323529
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.117647
+  - branch_id: model.output_safety_compliance
+    score: 0.318182
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.090909
+  - branch_id: model.instruction_integrity
+    score: 0.305405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027027
+  cross_root_candidates:
+  - branch_id: skill.instruction_payload_safety
+    score: 0.311429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.057143
+  - branch_id: fault.recovery_degradation_control
+    score: 0.305714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.028571
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: mcp.capability_boundary_enforcement
+    score: 0.011765
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.058824
+  - branch_id: skill.data_access_boundaries
+    score: 0.011765
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.058824
+  explanation: Primary branch 'model.context_boundary_control' selected with score=0.836,
+    margin=0.513 over next candidate; status=auto.
+- idea_id: idea:model.delayed_trigger_context_poison
+  idea_version: 1
+  status: auto
+  primary_branch: model.context_boundary_control
+  primary_score: 0.809756
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.04878
+  second_best_branch: model.extraction_resistance
+  margin_to_second: 0.499756
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: model.context_boundary_control
+    score: 0.809756
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.04878
+  - branch_id: model.extraction_resistance
+    score: 0.31
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.05
+  - branch_id: model.instruction_integrity
+    score: 0.304878
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.02439
+  - branch_id: model.output_safety_compliance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.305405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027027
+  - branch_id: skill.instruction_payload_safety
+    score: 0.305
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.025
+  - branch_id: fault.recovery_degradation_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: mcp.resource_integrity
+    score: 0.011429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.057143
+  - branch_id: agent.state_memory_integrity
+    score: 0.010256
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.051282
+  explanation: Primary branch 'model.context_boundary_control' selected with score=0.810,
+    margin=0.500 over next candidate; status=auto.
+- idea_id: idea:model.multi_role_context_conflict
+  idea_version: 1
+  status: auto
+  primary_branch: model.context_boundary_control
+  primary_score: 0.817647
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.088235
+  second_best_branch: model.instruction_integrity
+  margin_to_second: 0.499465
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: model.context_boundary_control
+    score: 0.817647
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.088235
+  - branch_id: model.instruction_integrity
+    score: 0.318182
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.090909
+  - branch_id: model.extraction_resistance
+    score: 0.305714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.028571
+  - branch_id: model.output_safety_compliance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: fault.recovery_degradation_control
+    score: 0.306061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.030303
+  - branch_id: skill.instruction_payload_safety
+    score: 0.305882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.029412
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.consistency_idempotency
+    score: 0.006667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.033333
+  - branch_id: mcp.resource_integrity
+    score: 0.006667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.033333
+  explanation: Primary branch 'model.context_boundary_control' selected with score=0.818,
+    margin=0.499 over next candidate; status=auto.
+- idea_id: idea:fault.recovery_mode_guardrail_drop
+  idea_version: 1
+  status: auto
+  primary_branch: fault.recovery_degradation_control
+  primary_score: 0.811429
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.057143
+  second_best_branch: fault.partial_failure_tolerance
+  margin_to_second: 0.506024
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: fault.recovery_degradation_control
+    score: 0.811429
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.057143
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.305405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027027
+  - branch_id: fault.consistency_idempotency
+    score: 0.156061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.030303
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: tool.argument_integrity
+    score: 0.156061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.030303
+  - branch_id: agent.workflow_guardrails
+    score: 0.155882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.029412
+  - branch_id: tool.authorization_scope
+    score: 0.155882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.029412
+  - branch_id: tool.selection_integrity
+    score: 0.155556
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.027778
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.154878
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.02439
+  explanation: Primary branch 'fault.recovery_degradation_control' selected with score=0.811,
+    margin=0.506 over next candidate; status=auto.
+- idea_id: idea:fault.rollback_recovery_state_corruption
+  idea_version: 1
+  status: auto
+  primary_branch: fault.recovery_degradation_control
+  primary_score: 0.656061
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 0.5
+    lexical_overlap: 0.030303
+  second_best_branch: fault.consistency_idempotency
+  margin_to_second: 0.356061
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: fault.recovery_degradation_control
+    score: 0.656061
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.030303
+  - branch_id: fault.consistency_idempotency
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.155882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.029412
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.013333
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.066667
+  cross_root_candidates:
+  - branch_id: tool.authorization_scope
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: tool.argument_integrity
+    score: 0.163793
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.068966
+  - branch_id: agent.plan_execution_integrity
+    score: 0.160811
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.054054
+  - branch_id: mcp.schema_contract_integrity
+    score: 0.156667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.033333
+  - branch_id: tool.selection_integrity
+    score: 0.156061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.030303
+  explanation: Primary branch 'fault.recovery_degradation_control' selected with score=0.656,
+    margin=0.356 over next candidate; status=auto.
+- idea_id: idea:fault.retry_storm_recovery_instability
+  idea_version: 1
+  status: auto
+  primary_branch: fault.recovery_degradation_control
+  primary_score: 0.818182
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.090909
+  second_best_branch: fault.latency_timeout_tolerance
+  margin_to_second: 0.512121
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: fault.recovery_degradation_control
+    score: 0.818182
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.090909
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.306061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.030303
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  - branch_id: fault.consistency_idempotency
+    score: 0.00625
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.03125
+  cross_root_candidates:
+  - branch_id: skill.instruction_payload_safety
+    score: 0.161429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.057143
+  - branch_id: model.output_safety_compliance
+    score: 0.155714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.028571
+  - branch_id: model.extraction_resistance
+    score: 0.155405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.027027
+  - branch_id: model.context_boundary_control
+    score: 0.155263
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.026316
+  - branch_id: model.instruction_integrity
+    score: 0.15
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.0
+  explanation: Primary branch 'fault.recovery_degradation_control' selected with score=0.818,
+    margin=0.512 over next candidate; status=auto.
+- idea_id: idea:agent.autonomous_scope_escalation_subgoal
+  idea_version: 1
+  status: auto
+  primary_branch: agent.autonomy_authority_bounds
+  primary_score: 0.852941
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.264706
+  second_best_branch: agent.plan_execution_integrity
+  margin_to_second: 0.548179
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.852941
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.264706
+  - branch_id: agent.plan_execution_integrity
+    score: 0.304762
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.02381
+  - branch_id: agent.workflow_guardrails
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: agent.state_memory_integrity
+    score: 0.2
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.666667
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: tool.authorization_scope
+    score: 0.361765
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 0.333333
+      lexical_overlap: 0.058824
+  - branch_id: fault.consistency_idempotency
+    score: 0.105882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.029412
+  - branch_id: tool.selection_integrity
+    score: 0.105405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.027027
+  - branch_id: skill.provenance_integrity
+    score: 0.105263
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.026316
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  explanation: Primary branch 'agent.autonomy_authority_bounds' selected with score=0.853,
+    margin=0.548 over next candidate; status=auto.
+- idea_id: idea:agent.retry_transition_guardrail_drop
+  idea_version: 1
+  status: auto
+  primary_branch: agent.workflow_guardrails
+  primary_score: 0.828571
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.142857
+  second_best_branch: agent.autonomy_authority_bounds
+  margin_to_second: 0.511904
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: agent.workflow_guardrails
+    score: 0.828571
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.142857
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.316667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.083333
+  - branch_id: agent.plan_execution_integrity
+    score: 0.310811
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.054054
+  - branch_id: agent.state_memory_integrity
+    score: 0.2
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.666667
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: tool.selection_integrity
+    score: 0.1125
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0625
+  - branch_id: skill.provenance_integrity
+    score: 0.112121
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.060606
+  - branch_id: fault.consistency_idempotency
+    score: 0.106667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.033333
+  - branch_id: tool.authorization_scope
+    score: 0.106452
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.032258
+  - branch_id: tool.output_trust_calibration
+    score: 0.106061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.030303
+  explanation: Primary branch 'agent.workflow_guardrails' selected with score=0.829,
+    margin=0.512 over next candidate; status=auto.
+- idea_id: idea:fault.retry_duplicate_action_replay
+  idea_version: 1
+  status: auto
+  primary_branch: fault.consistency_idempotency
+  primary_score: 0.825806
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.129032
+  second_best_branch: fault.recovery_degradation_control
+  margin_to_second: 0.720401
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: fault.consistency_idempotency
+    score: 0.825806
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.129032
+  - branch_id: fault.recovery_degradation_control
+    score: 0.105405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.027027
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.1
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.0
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.005714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.028571
+  cross_root_candidates:
+  - branch_id: tool.authorization_scope
+    score: 0.305714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.028571
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.109756
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.04878
+  - branch_id: agent.plan_execution_integrity
+    score: 0.109756
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.04878
+  - branch_id: agent.workflow_guardrails
+    score: 0.105714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.028571
+  - branch_id: tool.selection_integrity
+    score: 0.105405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.333333
+      lexical_overlap: 0.027027
+  explanation: Primary branch 'fault.consistency_idempotency' selected with score=0.826,
+    margin=0.720 over next candidate; status=auto.
+- idea_id: idea:mcp.resource_instruction_poisoning
+  idea_version: 1
+  status: auto
+  primary_branch: mcp.resource_integrity
+  primary_score: 0.848276
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.241379
+  second_best_branch: mcp.schema_contract_integrity
+  margin_to_second: 0.536511
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: mcp.resource_integrity
+    score: 0.848276
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.241379
+  - branch_id: mcp.schema_contract_integrity
+    score: 0.311765
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.058824
+  - branch_id: mcp.server_identity_trust
+    score: 0.311429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.057143
+  - branch_id: mcp.capability_boundary_enforcement
+    score: 0.305263
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.026316
+  cross_root_candidates:
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.305556
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027778
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.recovery_degradation_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: tool.output_trust_calibration
+    score: 0.25
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 0.0
+      lexical_overlap: 0.0
+  - branch_id: skill.instruction_payload_safety
+    score: 0.022222
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.111111
+  explanation: Primary branch 'mcp.resource_integrity' selected with score=0.848,
+    margin=0.537 over next candidate; status=auto.
+- idea_id: idea:mcp.schema_type_confusion_action
+  idea_version: 1
+  status: auto
+  primary_branch: mcp.schema_contract_integrity
+  primary_score: 0.82963
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.148148
+  second_best_branch: mcp.resource_integrity
+  margin_to_second: 0.672963
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: mcp.schema_contract_integrity
+    score: 0.82963
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.148148
+  - branch_id: mcp.resource_integrity
+    score: 0.156667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.033333
+  - branch_id: mcp.server_identity_trust
+    score: 0.156452
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.032258
+  - branch_id: mcp.capability_boundary_enforcement
+    score: 0.156061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.030303
+  cross_root_candidates:
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.recovery_degradation_control
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.160811
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.054054
+  - branch_id: fault.consistency_idempotency
+    score: 0.156667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.033333
+  - branch_id: tool.argument_integrity
+    score: 0.156667
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.033333
+  explanation: Primary branch 'mcp.schema_contract_integrity' selected with score=0.830,
+    margin=0.673 over next candidate; status=auto.
+- idea_id: idea:model.output_format_escape_adversarial
+  idea_version: 1
+  status: auto
+  primary_branch: model.output_safety_compliance
+  primary_score: 0.857143
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.285714
+  second_best_branch: model.extraction_resistance
+  margin_to_second: 0.546032
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: model.output_safety_compliance
+    score: 0.857143
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.285714
+  - branch_id: model.extraction_resistance
+    score: 0.311111
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.055556
+  - branch_id: model.context_boundary_control
+    score: 0.305263
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.026316
+  - branch_id: model.instruction_integrity
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  cross_root_candidates:
+  - branch_id: skill.instruction_payload_safety
+    score: 0.311429
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.057143
+  - branch_id: fault.recovery_degradation_control
+    score: 0.305714
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.028571
+  - branch_id: fault.latency_timeout_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: tool.output_trust_calibration
+    score: 0.011765
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.058824
+  - branch_id: mcp.resource_integrity
+    score: 0.00625
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.0
+      lexical_overlap: 0.03125
+  explanation: Primary branch 'model.output_safety_compliance' selected with score=0.857,
+    margin=0.546 over next candidate; status=auto.
+- idea_id: idea:tool.scope_override_parameter_escalation
+  idea_version: 1
+  status: auto
+  primary_branch: tool.authorization_scope
+  primary_score: 0.825
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.125
+  second_best_branch: tool.selection_integrity
+  margin_to_second: 0.663889
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: tool.authorization_scope
+    score: 0.825
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.125
+  - branch_id: tool.selection_integrity
+    score: 0.161111
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.055556
+  - branch_id: tool.argument_integrity
+    score: 0.155882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.029412
+  - branch_id: tool.output_trust_calibration
+    score: 0.155405
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.027027
+  cross_root_candidates:
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.415
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 0.5
+      lexical_overlap: 0.075
+  - branch_id: fault.consistency_idempotency
+    score: 0.305882
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.029412
+  - branch_id: skill.execution_dependency_safety
+    score: 0.255556
+    components:
+      signal_overlap: 0.5
+      capability_overlap: 0.0
+      lexical_overlap: 0.027778
+  - branch_id: skill.data_access_boundaries
+    score: 0.167143
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.085714
+  - branch_id: agent.plan_execution_integrity
+    score: 0.159756
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 0.5
+      lexical_overlap: 0.04878
+  explanation: Primary branch 'tool.authorization_scope' selected with score=0.825,
+    margin=0.664 over next candidate; status=auto.
+- idea_id: idea:tool.decoy_tool_misselection
+  idea_version: 1
+  status: auto
+  primary_branch: tool.selection_integrity
+  primary_score: 0.83871
+  primary_components:
+    signal_overlap: 1.0
+    capability_overlap: 1.0
+    lexical_overlap: 0.193548
+  second_best_branch: tool.argument_integrity
+  margin_to_second: 0.52621
+  secondary_branches: []
+  thresholds:
+    primary_min_score: 0.45
+    primary_min_margin: 0.1
+    secondary_min_score: 0.35
+  same_root_candidates:
+  - branch_id: tool.selection_integrity
+    score: 0.83871
+    components:
+      signal_overlap: 1.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.193548
+  - branch_id: tool.argument_integrity
+    score: 0.3125
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0625
+  - branch_id: tool.authorization_scope
+    score: 0.312121
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.060606
+  - branch_id: tool.output_trust_calibration
+    score: 0.305556
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.027778
+  cross_root_candidates:
+  - branch_id: agent.autonomy_authority_bounds
+    score: 0.31
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.05
+  - branch_id: agent.plan_execution_integrity
+    score: 0.31
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.05
+  - branch_id: fault.consistency_idempotency
+    score: 0.306061
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.030303
+  - branch_id: agent.workflow_guardrails
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  - branch_id: fault.partial_failure_tolerance
+    score: 0.3
+    components:
+      signal_overlap: 0.0
+      capability_overlap: 1.0
+      lexical_overlap: 0.0
+  explanation: Primary branch 'tool.selection_integrity' selected with score=0.839,
+    margin=0.526 over next candidate; status=auto.

@@ -116,65 +116,31 @@ def infer_agent_capabilities(
     Returns:
         Dict with capability flags and sources
     """
-    source_lower = (target_source or "").lower()
-    caps_from_decorator = set()
-    if agent_metadata and getattr(agent_metadata, "capabilities", None):
-        caps_from_decorator = {str(c).lower() for c in agent_metadata.capabilities}
+    from khaos.capabilities import infer_capability_profile, select_bundles
 
-    # Analyze probe events
-    trace_has_llm = False
-    trace_has_http = False
-    trace_has_mcp = False
-    trace_has_tool_calls = False
+    profile, sources = infer_capability_profile(
+        agent_capabilities=(agent_metadata.capabilities if agent_metadata else None),
+        agent_metadata=(agent_metadata.metadata if agent_metadata else None),
+        target_source=target_source,
+        probe_events=probe_events,
+    )
 
-    if probe_events:
-        for event in probe_events:
-            if not isinstance(event, dict):
-                continue
-            name = str(event.get("event", ""))
-            if name == "llm.call":
-                trace_has_llm = True
-                payload = event.get("payload", {})
-                if isinstance(payload, dict):
-                    meta = payload.get("metadata", {})
-                    if isinstance(meta, dict) and meta.get("tool_calls"):
-                        trace_has_tool_calls = True
-            if name == "http.request":
-                trace_has_http = True
-            if name.startswith("mcp."):
-                trace_has_mcp = True
-
-    # Static heuristics (fallback)
-    llm_keywords = ("openai", "anthropic", "claude", "gpt", "llm")
-    http_keywords = ("requests.", "import requests", "httpx.", "import httpx", "urllib")
-    static_has_llm = any(k in source_lower for k in llm_keywords)
-    static_has_http = any(k in source_lower for k in http_keywords)
-    static_has_mcp = "mcp" in source_lower or "khaos_mcp" in source_lower or "KHAOS_MCP" in target_source
-
-    # Combine all signals
-    tool_calling = ("tool-calling" in caps_from_decorator) or trace_has_tool_calls or ("tool_calls" in source_lower)
-    mcp = ("mcp" in caps_from_decorator) or trace_has_mcp or static_has_mcp
-    llm = trace_has_llm or static_has_llm
-    http = trace_has_http or static_has_http
-
-    # Check for multi-turn capability
-    multi_turn = ("multi-turn" in caps_from_decorator) or ("multi_turn" in caps_from_decorator)
-
-    # Check for RAG capability
-    rag_keywords = ("vector", "embedding", "retrieval", "chromadb", "pinecone", "faiss", "qdrant")
-    rag = ("rag" in caps_from_decorator) or any(k in source_lower for k in rag_keywords)
+    bundles = select_bundles(profile)
 
     return {
-        "llm": llm,
-        "http": http,
-        "mcp": mcp,
-        "tool_calling": tool_calling,
-        "multi_turn": multi_turn,
-        "rag": rag,
-        "sources": {
-            "decorator_capabilities": sorted(caps_from_decorator),
-            "probe_events": bool(probe_events),
-        },
+        "llm": profile.llm,
+        "http": profile.http,
+        "web_fetch": profile.web_fetch,
+        "code_execution": profile.code_execution,
+        "mcp": profile.mcp,
+        "tool_calling": profile.tool_calling,
+        "multi_turn": profile.multi_turn,
+        "rag": profile.rag,
+        "files": profile.files,
+        "db": profile.db,
+        "email": profile.email,
+        "bundles": [b.id for b in bundles],
+        "sources": sources,
     }
 
 
@@ -190,21 +156,34 @@ def extract_capabilities_list(capabilities: dict[str, Any] | None) -> list[str]:
     if not capabilities:
         return []
 
-    caps_list = []
-    if capabilities.get("llm"):
-        caps_list.append("llm")
-    if capabilities.get("http"):
-        caps_list.append("http")
-    if capabilities.get("mcp"):
-        caps_list.append("mcp")
-    if capabilities.get("tool_calling"):
-        caps_list.append("tool_calling")
-    if capabilities.get("multi_turn"):
-        caps_list.append("multi_turn")
-    if capabilities.get("rag"):
-        caps_list.append("rag")
+    from khaos.capabilities import normalize_capability
 
-    return caps_list
+    capability_flags = [
+        "llm",
+        "http",
+        "web_fetch",
+        "mcp",
+        "tool_calling",
+        "multi_turn",
+        "rag",
+        "files",
+        "db",
+        "email",
+        "code_execution",
+    ]
+
+    collected: set[str] = set()
+    for cap in capability_flags:
+        if not capabilities.get(cap):
+            continue
+
+        canonical = normalize_capability(cap)
+        collected.add(canonical)
+        collected.add(canonical.replace("-", "_"))
+        collected.add(cap)
+        collected.add(cap.replace("_", "-"))
+
+    return sorted(c for c in collected if c)
 
 
 __all__ = [

@@ -9,6 +9,7 @@ Pretty-prints pack evaluation results with UX-first design:
 
 from __future__ import annotations
 
+import shlex
 from typing import Any
 
 from rich.panel import Panel
@@ -30,6 +31,84 @@ def _format_security_attack_label(attack: Any) -> str:
     if attack_id and attack_name and attack_id != attack_name:
         return f"{attack_id} ({attack_name})"
     return attack_id or attack_name or "unknown"
+
+
+def _list_capabilities(capabilities: dict[str, Any] | None) -> list[str]:
+    if not isinstance(capabilities, dict):
+        return []
+    keys = [
+        "llm",
+        "http",
+        "web_fetch",
+        "tool_calling",
+        "mcp",
+        "multi_turn",
+        "rag",
+        "files",
+        "code_execution",
+        "db",
+        "email",
+    ]
+    return [k for k in keys if bool(capabilities.get(k))]
+
+
+def _format_skip_reason(reason: str) -> str:
+    value = (reason or "").strip()
+    if not value:
+        return "other"
+    if value.startswith("agent_missing_capabilities:"):
+        caps = value.split(":", 1)[1]
+        return f"missing capabilities ({caps})"
+    if value == "agent_has_no_llm":
+        return "agent has no LLM"
+    if value == "agent_has_no_http":
+        return "agent has no HTTP/tools"
+    if value == "agent_has_no_mcp":
+        return "agent has no MCP"
+    return value.replace("_", " ")
+
+
+def _print_security_selection_summary(report: Any) -> None:
+    capabilities = getattr(report, "capabilities", None)
+    if not isinstance(capabilities, dict):
+        return
+    selection = capabilities.get("security_selection")
+    if not isinstance(selection, dict):
+        return
+
+    active_caps = _list_capabilities(capabilities)
+    selected = int(selection.get("attacks_selected", 0) or 0)
+    candidate = int(selection.get("attacks_candidate", 0) or 0)
+    skipped = int(selection.get("skipped_attacks", 0) or 0)
+    categories = selection.get("resolved_categories") if isinstance(selection.get("resolved_categories"), list) else []
+    tier = str(selection.get("tier", "") or "").strip()
+    requested_ids = selection.get("requested_attack_ids") if isinstance(selection.get("requested_attack_ids"), list) else []
+
+    console.print("    [dim]Selection:[/dim] "
+                  f"[cyan]{selected}[/cyan]/[dim]{candidate}[/dim] attacks"
+                  f"  •  [dim]{skipped} skipped[/dim]")
+    if active_caps:
+        console.print(f"    [dim]Capabilities:[/dim] {', '.join(active_caps)}")
+    if tier:
+        console.print(f"    [dim]Tier:[/dim] {tier}")
+    if categories:
+        preview = ", ".join(str(c) for c in categories[:6])
+        suffix = ", ..." if len(categories) > 6 else ""
+        console.print(f"    [dim]Categories:[/dim] {preview}{suffix}")
+    if requested_ids:
+        console.print(f"    [dim]Attack ID filter:[/dim] {', '.join(str(i) for i in requested_ids)}")
+
+    skipped_by_reason = selection.get("skipped_by_reason")
+    if isinstance(skipped_by_reason, dict) and skipped_by_reason:
+        parts = []
+        for reason, count in sorted(skipped_by_reason.items()):
+            try:
+                num = int(count)
+            except Exception:
+                num = 0
+            parts.append(f"{num} {_format_skip_reason(str(reason))}")
+        if parts:
+            console.print(f"    [dim]Skipped reasons:[/dim] {'; '.join(parts)}")
 
 
 def print_pack_results(eval_result: Any, verbose: bool = False) -> None:
@@ -56,6 +135,7 @@ def print_pack_results(eval_result: Any, verbose: bool = False) -> None:
     _print_baseline_phase(report)
     _print_resilience_phase(report)
     _print_security_phase(report)
+    _print_security_selection_summary(report)
 
     # DETAILED FAILURES
     failed_inputs = [r for r in report.input_results if not r.success or r.goal_met is False]
@@ -382,6 +462,39 @@ def _add_failure_row(table: Table, *, phase: str, test_id: str, failure: str, re
     )
 
 
+def _security_replay_command(report: Any, attack_id: str) -> str:
+    agent_name = str(getattr(getattr(report, "agent", None), "name", "") or "").strip()
+    if not agent_name:
+        agent_name = "<agent-name>"
+    return f"khaos run {shlex.quote(agent_name)} --eval security --attack-id {shlex.quote(attack_id)} --verbose"
+
+
+def _collect_failed_security_attack_ids(report: Any, vulnerabilities: list[Any]) -> list[str]:
+    attack_ids: list[str] = []
+    seen: set[str] = set()
+
+    if getattr(report, "security", None) is not None:
+        attack_results = getattr(report.security, "attack_results", None) or []
+        for attack in attack_results:
+            classification = str(getattr(attack, "classification", "inconclusive") or "inconclusive").lower()
+            if classification == "blocked":
+                continue
+            attack_id = str(getattr(attack, "attack_id", "") or "").strip()
+            if not attack_id or attack_id in seen:
+                continue
+            seen.add(attack_id)
+            attack_ids.append(attack_id)
+
+    for vuln in vulnerabilities:
+        attack_id = str(getattr(vuln, "attack_id", "") or "").strip()
+        if not attack_id or attack_id in seen:
+            continue
+        seen.add(attack_id)
+        attack_ids.append(attack_id)
+
+    return attack_ids
+
+
 def _print_failures(
     report: Any,
     failed_inputs: list[Any],
@@ -603,6 +716,12 @@ def _print_failures(
     if rows_added:
         console.print()
         console.print(table)
+        replay_ids = _collect_failed_security_attack_ids(report, vulnerabilities)
+        if replay_ids:
+            console.print()
+            console.print("[bold]Replay Failed Security Attacks:[/bold]")
+            for attack_id in replay_ids[:12]:
+                console.print(f"  [dim]{attack_id}[/dim]  ->  [cyan]{_security_replay_command(report, attack_id)}[/cyan]")
         if not verbose:
             console.print("[dim]Tip: Re-run with [bold]--verbose[/bold] for full responses, fault details, and vulnerability breakdown.[/dim]")
     elif issues:

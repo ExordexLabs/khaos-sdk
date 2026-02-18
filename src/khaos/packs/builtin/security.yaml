@@ -7,7 +7,7 @@
 pack:
   name: security
   version: "1.0"
-  description: "Deep security testing. All attack categories, full attack corpus."
+  description: "Deep security testing with capability-aware attack selection and tier prioritization."
   estimated_time: "5-8 minutes"
 
 phases:
@@ -21,11 +21,16 @@ phases:
     runs: 1
     faults: []
     security: true
-    attack_bundles:
-      - security_core
-      - security_tools
-      - security_rag
-    # No limit - test all attacks
+    security_config:
+      tier: standard
+      adaptive_deepening: true
+      max_followups_per_category: 5
+      attacks_per_category: 4
+      tier_priority:
+        - agent
+        - tool
+      include_model_tier: true
+    # Intentionally no attack_bundles: categories are inferred from detected capabilities.
     timeout_ms: 480000
 
 # Minimal inputs - security is the focus

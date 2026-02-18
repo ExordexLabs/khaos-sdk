@@ -256,6 +256,7 @@ class CapabilityProfile:
     multi_turn: bool = False
     rag: bool = False
     files: bool = False
+    code_execution: bool = False
     db: bool = False
     email: bool = False
 
@@ -271,6 +272,7 @@ class CapabilityProfile:
             ("multi_turn", self.multi_turn),
             ("rag", self.rag),
             ("files", self.files),
+            ("code_execution", self.code_execution),
             ("db", self.db),
             ("email", self.email),
         ]
@@ -294,6 +296,17 @@ _FILE_TOOLS: set[str] = {
     "delete_file",
     "move_file",
     "copy_file",
+}
+
+_CODE_EXECUTION_TOOLS: set[str] = {
+    "run_command",
+    "execute_command",
+    "execute_code",
+    "run_code",
+    "code_interpreter",
+    "shell",
+    "bash",
+    "terminal",
 }
 
 _DB_TOOLS: set[str] = {
@@ -331,7 +344,8 @@ def infer_capability_profile(
     """
 
     source_lower = (target_source or "").lower()
-    caps_from_decorator = {str(c).lower() for c in (agent_capabilities or [])}
+    caps_raw = {str(c).strip().lower() for c in (agent_capabilities or [])}
+    caps_from_decorator = {normalize_capability(c) for c in caps_raw}
 
     # Metadata hints (best-effort). In practice, @khaosagent(metadata={"tools_enabled":[...]})
     # is the most reliable source for tool surface area.
@@ -371,7 +385,6 @@ def infer_capability_profile(
 
     tool_calling = (
         ("tool-calling" in caps_from_decorator)
-        or ("tool_calling" in caps_from_decorator)
         or trace_has_tool_calls
         or bool(tools_enabled)
         or ("tool_calls" in source_lower)
@@ -383,21 +396,28 @@ def infer_capability_profile(
 
     multi_turn = (
         ("multi-turn" in caps_from_decorator)
-        or ("multi_turn" in caps_from_decorator)
-        or ("multiturn" in caps_from_decorator)
+        or ("multi_turn" in caps_raw)
+        or ("multiturn" in caps_raw)
     )
     rag = ("rag" in caps_from_decorator) or any(
         k in source_lower for k in ("vector", "embedding", "retrieval", "chromadb", "pinecone", "faiss", "qdrant")
     )
 
     # Tool surface area: prefer explicit tools_enabled hints.
-    web_fetch = ("web_fetch" in caps_from_decorator) or bool(tools_enabled.intersection(_WEB_TOOLS))
-    files = ("files" in caps_from_decorator) or bool(tools_enabled.intersection(_FILE_TOOLS))
-    db = ("db" in caps_from_decorator) or bool(tools_enabled.intersection(_DB_TOOLS))
+    web_fetch = (
+        bool({"web_fetch", "web-fetch", "web_search", "web-search"}.intersection(caps_raw))
+        or bool(tools_enabled.intersection(_WEB_TOOLS))
+    )
+    files = ("file-system" in caps_from_decorator) or bool(tools_enabled.intersection(_FILE_TOOLS))
+    code_execution = (
+        ("code-execution" in caps_from_decorator)
+        or bool(tools_enabled.intersection(_CODE_EXECUTION_TOOLS))
+    )
+    db = ("database" in caps_from_decorator) or ("db" in caps_raw) or bool(tools_enabled.intersection(_DB_TOOLS))
     email = ("email" in caps_from_decorator) or bool(tools_enabled.intersection(_EMAIL_TOOLS))
 
     # If the agent exposes any tool surface area, treat it as tool-capable.
-    if web_fetch or files or db or email:
+    if web_fetch or files or code_execution or db or email:
         tool_calling = True
 
     # If the agent uses tools and we recognize specific tool classes, that implies HTTP.
@@ -413,6 +433,7 @@ def infer_capability_profile(
         multi_turn=multi_turn,
         rag=rag,
         files=files,
+        code_execution=code_execution,
         db=db,
         email=email,
     )
@@ -449,6 +470,10 @@ _BUNDLE_CATALOG: dict[str, CapabilityBundle] = {
     "security_mcp": CapabilityBundle(
         id="security_mcp",
         description="MCP/tooling-specific injection and protocol risks.",
+    ),
+    "security_agentic": CapabilityBundle(
+        id="security_agentic",
+        description="Agent-environment attacks (file/shell/error/env/workflow manipulation).",
     ),
     "resilience_core": CapabilityBundle(
         id="resilience_core",
@@ -506,6 +531,16 @@ _SECURITY_BUNDLE_CATEGORY_MAP: dict[str, list[str]] = {
         "tool_output_injection",
         "tool_manipulation",
     ],
+    # Agent-environment attacks for file/shell/code-capable agents.
+    "security_agentic": [
+        "file_content_injection",
+        "shell_output_injection",
+        "error_message_injection",
+        "env_var_injection",
+        "workflow_hijack",
+        "state_manipulation",
+        "agentic_action_abuse",
+    ],
     # Agentic environment attacks (file/shell-based agents like Claude Code)
     "file_content_injection": [
         "file_content_injection",
@@ -530,8 +565,10 @@ _SECURITY_BUNDLE_CATEGORY_MAP: dict[str, list[str]] = {
     "unauthorized_action": ["unauthorized_action"],
     "env_var_injection": ["env_var_injection"],
     "workflow_hijack": ["workflow_hijack"],
+    "state_manipulation": ["state_manipulation"],
     "tool_output_injection": ["tool_output_injection"],
     "tool_manipulation": ["tool_manipulation"],
+    "tool_description_injection": ["tool_description_injection"],
     "mcp_server_attack": ["mcp_server_attack", "mcp_protocol_injection", "mcp_resource_poisoning", "mcp_tool_hijack"],
     "api_response_poisoning": ["api_response_poisoning"],
     "prompt_injection": ["prompt_injection"],
@@ -595,9 +632,11 @@ _SECURITY_CATEGORY_ORDER: list[str] = [
     "unauthorized_action",
     "env_var_injection",
     "workflow_hijack",
+    "state_manipulation",
     # TOOL tier - tool/MCP attacks
     "tool_output_injection",
     "tool_manipulation",
+    "tool_description_injection",
     "mcp_server_attack",
     "mcp_protocol_injection",
     "mcp_resource_poisoning",
@@ -640,6 +679,8 @@ def select_bundles(profile: CapabilityProfile) -> list[CapabilityBundle]:
         bundles.append(_BUNDLE_CATALOG["security_rag"])
     if profile.mcp:
         bundles.append(_BUNDLE_CATALOG["security_mcp"])
+    if profile.files or profile.code_execution:
+        bundles.append(_BUNDLE_CATALOG["security_agentic"])
 
     # Resilience
     bundles.append(_BUNDLE_CATALOG["resilience_core"])

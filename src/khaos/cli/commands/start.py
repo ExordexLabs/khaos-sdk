@@ -70,6 +70,7 @@ def _detect_capabilities_for_agent(
         "multi_turn": bool(caps_dict.get("multi_turn", False)),
         "rag": bool(caps_dict.get("rag", False)),
         "files": bool(caps_dict.get("files", False)),
+        "code_execution": bool(caps_dict.get("code_execution", False)),
         "db": bool(caps_dict.get("db", False)),
         "email": bool(caps_dict.get("email", False)),
     }
@@ -150,19 +151,19 @@ def _show_simplified_pack_list() -> None:
     table.add_column("Use Case")
 
     table.add_row(
-        "khaos start agent.py",
+        "khaos start <agent-name>",
         "break",
         "~2 min",
         "Find your first vulnerability fast",
     )
     table.add_row(
-        "khaos start agent.py --intent assess",
+        "khaos start <agent-name> --intent assess",
         "assess",
         "~8 min",
         "Pre-release readiness check",
     )
     table.add_row(
-        "khaos start agent.py --intent audit",
+        "khaos start <agent-name> --intent audit",
         "audit",
         "~15 min",
         "Comprehensive security audit",
@@ -176,7 +177,7 @@ def _show_simplified_pack_list() -> None:
     for pack_name in ["break", "assess", "audit"]:
         if pack_name in list_builtin_packs():
             pack = get_builtin_pack(pack_name)
-            console.print(f"  [cyan]khaos run agent.py --pack {pack_name}[/cyan]")
+            console.print(f"  [cyan]khaos run <agent-name> --eval {pack_name}[/cyan]")
             console.print(f"    {pack.description}")
             console.print()
 
@@ -184,9 +185,9 @@ def _show_simplified_pack_list() -> None:
 
 
 def start(
-    target: str = typer.Argument(
-        ...,
-        help="Agent name (from `khaos discover`) or path to agent file.",
+    target: str | None = typer.Argument(
+        None,
+        help="Agent name (from `khaos discover`), optionally pinned as name@version.",
     ),
     intent: str = typer.Option(
         "break",
@@ -288,6 +289,11 @@ def start(
         _show_simplified_pack_list()
         raise typer.Exit(0)
 
+    if not target:
+        raise typer.BadParameter(
+            "TARGET is required. Use an agent name from `khaos discover --list`."
+        )
+
     # Parse environment variables
     extra_env: dict[str, str] = {}
     for item in env:
@@ -365,14 +371,14 @@ def start(
 
     run_with_pack(
         target=str(target_path),
-        pack_name=pack.name if not dynamic else "break",  # Use intent name for dynamic
+        pack_name=pack.name,
+        pack_override=pack if dynamic else None,
         python=python,
         extra_env=extra_env,
         timeout=timeout,
         json_output=json_output,
         verbose=verbose,
         quiet=quiet,
-        custom_inputs=pack.inputs if dynamic else None,  # Pass dynamic pack inputs
         sync_cloud=sync_cloud,
         name=name,
     )

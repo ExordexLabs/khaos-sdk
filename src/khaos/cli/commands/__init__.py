@@ -6,6 +6,7 @@ Core commands:
 - compare: Compare two agent runs
 - gate: CI/CD gate check with thresholds
 - sync: Sync results to cloud dashboard
+- taxonomy: Browse taxonomy roots/branches/ideas and starter plans
 - scenarios: Browse and manage test scenarios
 """
 
@@ -15,6 +16,7 @@ from .compare import compare
 from .gate import gate
 from .sync import sync
 from .scenarios import scenarios_app
+from .taxonomy import taxonomy_app
 
 __all__ = [
     "run",
@@ -22,5 +24,6 @@ __all__ = [
     "compare",
     "gate",
     "sync",
+    "taxonomy_app",
     "scenarios_app",
 ]
