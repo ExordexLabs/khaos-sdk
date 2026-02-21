@@ -42,7 +42,7 @@ def print_run_footer(
     if url:
         console.print(f"  [dim]View in dashboard:[/dim] {url}")
     else:
-        console.print("  [dim]View in dashboard:[/dim] run `khaos sync --login` then `khaos sync`")
+        console.print("  [dim]View in dashboard:[/dim] run `khaos login` then `khaos sync`")
     console.print(f"  [dim]Export artifacts:[/dim] [bold]khaos export {run_id} --out {run_id}.json[/bold]")
 
     existing: list[Path] = []

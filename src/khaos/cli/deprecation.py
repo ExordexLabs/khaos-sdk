@@ -45,11 +45,11 @@ DEPRECATED_COMMANDS: list[DeprecatedCommand] = [
     ),
     DeprecatedCommand(
         old_command="cloud login",
-        new_command="sync --login",
+        new_command="login",
         deprecated_in="0.8.0",
         remove_in="0.10.0",
         migration_guide=(
-            "Replace 'khaos cloud login' with 'khaos sync --login'.\n"
+            "Replace 'khaos cloud login' with 'khaos login'.\n"
             "The sync command auto-logins when needed, so explicit login "
             "is rarely required."
         ),
@@ -67,13 +67,31 @@ DEPRECATED_COMMANDS: list[DeprecatedCommand] = [
     ),
     DeprecatedCommand(
         old_command="cloud logout",
-        new_command="sync --logout",
+        new_command="logout",
         deprecated_in="0.8.0",
         remove_in="0.10.0",
         migration_guide=(
-            "Replace 'khaos cloud logout' with 'khaos sync --logout'."
+            "Replace 'khaos cloud logout' with 'khaos logout'."
         ),
         deprecated_date=date(2024, 11, 1),
+    ),
+    DeprecatedCommand(
+        old_command="sync --login",
+        new_command="login",
+        deprecated_in="0.9.0",
+        remove_in="0.11.0",
+        migration_guide=(
+            "Replace 'khaos sync --login' with 'khaos login'."
+        ),
+    ),
+    DeprecatedCommand(
+        old_command="sync --logout",
+        new_command="logout",
+        deprecated_in="0.9.0",
+        remove_in="0.11.0",
+        migration_guide=(
+            "Replace 'khaos sync --logout' with 'khaos logout'."
+        ),
     ),
 ]
 
@@ -150,17 +168,25 @@ This document tracks deprecated CLI commands and their planned removal.
 The `run` command now includes all `observe` functionality plus security
 and resilience testing. The `observe` command was redundant.
 
-### `cloud` subcommands → `sync`
+### `cloud` subcommands → top-level commands
 
 - **Deprecated in**: v0.8.0
 - **Remove in**: v0.10.0
 - **Migration**:
-  - `khaos cloud login` → `khaos sync --login`
+  - `khaos cloud login` → `khaos login`
   - `khaos cloud status` → `khaos sync --status`
-  - `khaos cloud logout` → `khaos sync --logout`
+  - `khaos cloud logout` → `khaos logout`
 
-The `sync` command consolidates all cloud operations and auto-logins
-when needed, reducing the need for explicit login commands.
+### `sync --login` / `sync --logout` → `login` / `logout`
+
+- **Deprecated in**: v0.9.0
+- **Remove in**: v0.11.0
+- **Migration**:
+  - `khaos sync --login` → `khaos login`
+  - `khaos sync --logout` → `khaos logout`
+
+Login and logout are now top-level commands. The `sync` command focuses
+on uploading pending runs.
 
 ## Removed Commands
 

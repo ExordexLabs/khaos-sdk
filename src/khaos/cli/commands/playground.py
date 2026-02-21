@@ -197,7 +197,7 @@ def _request_cloud_session(agent_name: str | None) -> str:
         if not _trigger_device_login():
             console.print(
                 "\n[red]Error:[/red] Authentication required for playground.\n"
-                "  Run [cyan]khaos sync --login[/cyan] to authenticate manually.\n"
+                "  Run [cyan]khaos login[/cyan] to authenticate manually.\n"
             )
             raise typer.Exit(1)
 
@@ -233,7 +233,7 @@ def _request_cloud_session(agent_name: str | None) -> str:
         if not _trigger_device_login():
             console.print(
                 "\n[red]Error:[/red] Authentication required for playground.\n"
-                "  Run [cyan]khaos sync --login[/cyan] to authenticate manually.\n"
+                "  Run [cyan]khaos login[/cyan] to authenticate manually.\n"
             )
             raise typer.Exit(1)
         # Retry after re-login

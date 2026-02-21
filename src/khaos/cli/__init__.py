@@ -9,13 +9,13 @@ Design Principles:
 Core Commands:
     start      - Smart, capability-aware evaluation (recommended for new users)
     run        - Full control with explicit eval selection
-    recommend  - Suggest next best test commands for an agent
-    taxonomy   - Explore taxonomy roots/branches/ideas and starter plans
     evals      - List and manage evaluations
     compare    - Compare runs (or list recent runs with no args)
     ci         - CI/CD pipeline command (run + gate + report in one)
     gate       - CI/CD gate check with thresholds
     sync       - Sync results to cloud dashboard
+    login      - Authenticate with Khaos Cloud
+    logout     - Logout from Khaos Cloud
     guide      - Quick start guide for choosing evaluations
 
 See khaos.cli.deprecation for deprecated command timeline.
@@ -86,6 +86,8 @@ def _register_commands() -> None:
     from khaos.cli.commands.compare import compare
     from khaos.cli.commands.gate import gate
     from khaos.cli.commands.sync import sync
+    from khaos.cli.commands.login import login
+    from khaos.cli.commands.logout import logout
     from khaos.cli.commands.ci import ci
     from khaos.cli.commands.doctor import doctor
     from khaos.cli.commands.export import export
@@ -109,6 +111,8 @@ def _register_commands() -> None:
     app.command("test")(test)  # Python-native agent testing
     app.command("gate")(gate)
     app.command("sync")(sync)
+    app.command("login")(login)
+    app.command("logout")(logout)
     app.command("doctor")(doctor)
     app.command("export")(export)
     app.command("artifacts")(artifacts)
@@ -167,16 +171,18 @@ def _register_legacy_commands() -> None:
                 verbose=verbose,
             )
 
-        # Keep cloud subcommands accessible via sync
+        # Keep cloud subcommands accessible
+        from khaos.cli.commands.login import login as login_cmd
+        from khaos.cli.commands.logout import logout as logout_cmd
         from khaos.cli.commands.sync import sync as sync_cmd
 
         cloud_app = typer.Typer(hidden=True, deprecated=True)
 
         @cloud_app.command("login")
         def cloud_login_alias() -> None:
-            """[Deprecated] Use 'khaos sync --login' instead. Will be removed in v0.10.0."""
+            """[Deprecated] Use 'khaos login' instead. Will be removed in v0.10.0."""
             show_deprecation_warning("cloud login")
-            sync_cmd(login=True)
+            login_cmd()
 
         @cloud_app.command("status")
         def cloud_status_alias() -> None:
@@ -186,9 +192,9 @@ def _register_legacy_commands() -> None:
 
         @cloud_app.command("logout")
         def cloud_logout_alias() -> None:
-            """[Deprecated] Use 'khaos sync --logout' instead. Will be removed in v0.10.0."""
+            """[Deprecated] Use 'khaos logout' instead. Will be removed in v0.10.0."""
             show_deprecation_warning("cloud logout")
-            sync_cmd(logout=True)
+            logout_cmd()
 
         app.add_typer(cloud_app, name="cloud")
 

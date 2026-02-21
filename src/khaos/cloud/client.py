@@ -29,7 +29,7 @@ class RecoverableAuthError(CloudAuthError):
 
     def __init__(self, message: str, *, hint: str | None = None):
         super().__init__(message)
-        self.hint = hint or "Run `khaos sync --login` to re-authenticate."
+        self.hint = hint or "Run `khaos login` to re-authenticate."
 
 
 @dataclass
@@ -39,7 +39,7 @@ class CloudSession:
     def require_token(self) -> tuple[str, str, str]:
         if not self.config.token or not self.config.project_id:
             raise CloudAuthError(
-                "Cloud credentials not configured. Run `khaos sync --login`, or set "
+                "Cloud credentials not configured. Run `khaos login`, or set"
                 "`KHAOS_API_URL`, `KHAOS_API_TOKEN`, and `KHAOS_PROJECT_SLUG` (recommended for CI)."
             )
         api_url = self.config.api_url.rstrip("/")

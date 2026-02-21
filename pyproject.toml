@@ -1,6 +1,6 @@
 [project]
 name = "khaos-agent"
-version = "1.0.3"
+version = "1.0.5"
 description = "Chaos engineering and security testing toolkit for AI agents."
 authors = [{ name = "Ordo Labs", email = "robby@exordex.com" }]
 readme = "README.md"

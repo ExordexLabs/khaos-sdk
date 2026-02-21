@@ -93,7 +93,7 @@ async def request_playground_session(
     config = load_cloud_config()
     if not config.token:
         raise NotLoggedInError(
-            "Not logged in. Run 'khaos sync --login' to authenticate."
+            "Not logged in. Run 'khaos login' to authenticate."
         )
 
     # Get dashboard API URL (playground auth is on dashboard, not backend)
@@ -115,7 +115,7 @@ async def request_playground_session(
 
         if response.status_code == 401:
             raise NotLoggedInError(
-                "Invalid or expired token. Run 'khaos sync --login' to re-authenticate."
+                "Invalid or expired token. Run 'khaos login' to re-authenticate."
             )
 
         if response.status_code == 403:

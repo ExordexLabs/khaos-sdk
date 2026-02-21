@@ -39,7 +39,7 @@ class UploadClient:
         if job.project_id and job.project_id != self.project_id:
             raise RecoverableAuthError(
                 f"Project mismatch: run targets '{job.project_id}' but you're logged into '{self.project_id}'.",
-                hint="Run `khaos sync --login` and select the correct project, or re-run with --project to target your current project.",
+                hint="Run `khaos login` and select the correct project, or re-run with --project to target your current project.",
             )
 
         run_payload = {
@@ -210,7 +210,7 @@ class UploadClient:
             if response.status_code == 401:
                 raise RecoverableAuthError(
                     "Your authentication token was rejected (401). This usually means the token expired or was revoked.",
-                    hint="Run `khaos sync --login` to re-authenticate.",
+                    hint="Run `khaos login` to re-authenticate.",
                 )
 
             if response.status_code == 403:
@@ -223,7 +223,7 @@ class UploadClient:
                     pass
                 raise RecoverableAuthError(
                     f"Access denied (403). You don't have permission to access this project or resource. {detail}".strip(),
-                    hint="Run `khaos sync --login` and select a project you have access to.",
+                    hint="Run `khaos login` and select a project you have access to.",
                 )
 
             retryable = (
@@ -291,7 +291,7 @@ class UploadClient:
                 if response.status_code == 404 and isinstance(detail_text, str) and "project not found" in detail_text.lower():
                     raise RecoverableAuthError(
                         "Project not found (404). The project you're trying to sync to doesn't exist or you don't have access.",
-                        hint="Run `khaos sync --login` and select a valid project.",
+                        hint="Run `khaos login` and select a valid project.",
                     )
 
             raise CloudAuthError(f"Ingestion API error {response.status_code}: {detail_text}")

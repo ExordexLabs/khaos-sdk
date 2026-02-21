@@ -67,7 +67,7 @@ def list_tokens(
     config = session.config
     resolved_project = (project or config.project_id or "").strip()
     if not resolved_project:
-        console.print("[red]No project configured.[/red] Set `KHAOS_PROJECT_SLUG` or run `khaos sync --login`.")
+        console.print("[red]No project configured.[/red] Set `KHAOS_PROJECT_SLUG` or run `khaos login`.")
         raise typer.Exit(code=2)
 
     try:
@@ -137,7 +137,7 @@ def create_token(
     config = session.config
     resolved_project = (project or config.project_id or "").strip()
     if not resolved_project:
-        console.print("[red]No project configured.[/red] Set `KHAOS_PROJECT_SLUG` or run `khaos sync --login`.")
+        console.print("[red]No project configured.[/red] Set `KHAOS_PROJECT_SLUG` or run `khaos login`.")
         raise typer.Exit(code=2)
 
     try:

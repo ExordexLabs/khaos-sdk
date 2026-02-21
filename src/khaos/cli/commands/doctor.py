@@ -54,7 +54,7 @@ def doctor(
     if logged_in:
         ok("Cloud login", f"project={config.project_id} token={config.masked_token()}")
     else:
-        warn("Cloud login", "not logged in (run `khaos sync --login`)")
+        warn("Cloud login", "not logged in (run `khaos login`)")
 
     pending = sync_queue.list_jobs()
     if pending:

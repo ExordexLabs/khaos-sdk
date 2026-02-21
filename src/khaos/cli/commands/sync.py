@@ -1,14 +1,7 @@
 """The `sync` command - Sync results to cloud dashboard.
 
-Consolidates cloud-related functionality:
-- Sync pending runs to cloud (auto-login if needed)
-- Force re-login (reset credentials)
-- Logout
-- Status check
-
 Usage:
     khaos sync                 # Sync pending runs (auto-login if needed)
-    khaos sync --login         # Force re-login (reset credentials)
     khaos sync --status        # Check sync status
 """
 
@@ -31,22 +24,12 @@ from khaos.cloud.upload import UploadClient
 from khaos.cloud.links import dashboard_evaluation_url_for_job
 from khaos.state import get_state_dir
 from khaos.cli.console import console
+from khaos.cli.commands.login import _handle_login
 
 logger = logging.getLogger(__name__)
 
 
 def sync(
-    login: bool = typer.Option(
-        False,
-        "--login",
-        "-l",
-        help="Force re-login (reset credentials). Sync auto-logins if needed.",
-    ),
-    logout: bool = typer.Option(
-        False,
-        "--logout",
-        help="Logout from cloud.",
-    ),
     status: bool = typer.Option(
         False,
         "--status",
@@ -77,30 +60,16 @@ def sync(
         "-j",
         help="Output results as JSON.",
     ),
-    admin: bool = typer.Option(
-        False,
-        "--admin",
-        help="Request an admin-scoped token during `--login` (requires owner/project admin).",
-    ),
-    scopes: list[str] = typer.Option(
-        [],
-        "--scope",
-        help="Additional scopes to request during `--login` (can be repeated).",
-    ),
 ) -> None:
     """Sync run results to cloud dashboard.
 
-    Automatically logs in if not authenticated. Use --login to force
-    re-login (reset credentials), --status to check current state,
-    or --run to sync a specific run.
+    Automatically logs in if not authenticated. Use --status to check
+    current state, or --run to sync a specific run.
 
     Examples:
 
         # Sync all pending runs (auto-login if needed)
         khaos sync
-
-        # Force re-login / reset credentials
-        khaos sync --login
 
         # Check status
         khaos sync --status
@@ -111,17 +80,6 @@ def sync(
         # Sync and cleanup local files
         khaos sync --cleanup
     """
-    # Handle logout
-    if logout:
-        _handle_logout(force)
-        return
-
-    # Handle login (force re-login if --login flag is used)
-    if login:
-        _handle_login(force=True, admin=admin, scopes=scopes)
-        if not status and not run_id:
-            return  # Just login, don't sync
-
     # Handle status
     if status:
         _show_status(json_output)
@@ -129,72 +87,6 @@ def sync(
 
     # Sync runs
     _sync_runs(run_id=run_id, force=force, cleanup=cleanup, json_output=json_output)
-
-
-def _handle_login(*, force: bool = False, admin: bool = False, scopes: list[str] | None = None) -> None:
-    """Handle cloud login.
-
-    Args:
-        force: If True, force re-login even if already authenticated.
-    """
-    from khaos.cloud.device import DeviceAuthConfig, DeviceAuthError, start_device_flow
-
-    config = load_cloud_config()
-
-    # Check if already logged in
-    if config.token and config.project_id and not force:
-        console.print(f"[green]Already logged in to {config.project_id}[/green]")
-        return
-
-    if force and config.token:
-        console.print(f"[yellow]Re-authenticating (was: {config.project_id})...[/yellow]")
-
-    # Interactive login via device flow
-    try:
-        requested_scopes = ["ingest:write"]
-        if admin:
-            requested_scopes.append("admin")
-        if scopes:
-            requested_scopes.extend([s for s in scopes if s])
-        # Deduplicate while preserving order.
-        seen: set[str] = set()
-        requested_scopes = [s for s in requested_scopes if not (s in seen or seen.add(s))]
-
-        auth_config = DeviceAuthConfig(
-            api_url=config.api_url,
-            dashboard_url=config.dashboard_url or "https://khaos.exordex.com",
-            project=None,  # Will be selected in browser
-            scopes=requested_scopes,
-        )
-        new_config = start_device_flow(auth_config)
-        console.print(f"[green]Successfully logged in to {new_config.project_id}[/green]")
-    except DeviceAuthError as exc:
-        console.print(f"[red]Login failed: {exc}[/red]")
-        raise typer.Exit(code=1)
-
-
-def _handle_logout(force: bool) -> None:
-    """Handle cloud logout."""
-    from khaos.cloud.config import save_cloud_config, CloudConfig
-
-    config = load_cloud_config()
-    if not config.token:
-        console.print("[yellow]Not logged in[/yellow]")
-        return
-
-    if not force:
-        confirm = typer.confirm("Are you sure you want to logout?")
-        if not confirm:
-            console.print("[yellow]Logout cancelled[/yellow]")
-            return
-
-    # Clear credentials by saving empty config
-    empty_config = CloudConfig(
-        api_url=config.api_url,
-        dashboard_url=config.dashboard_url,
-    )
-    save_cloud_config(empty_config)
-    console.print("[green]Successfully logged out[/green]")
 
 
 def _show_status(json_output: bool) -> None:
@@ -231,7 +123,7 @@ def _show_status(json_output: bool) -> None:
             console.print(f"[green]Logged in to project:[/green] {config.project_id}")
         else:
             console.print("[yellow]Not logged in[/yellow]")
-            console.print("[dim]Run 'khaos sync --login' to authenticate[/dim]")
+            console.print("[dim]Run 'khaos login' to authenticate[/dim]")
 
         # Queue status
         console.print(f"\n[bold]Sync Queue:[/bold]")

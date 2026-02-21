@@ -195,7 +195,7 @@ Khaos is fully usable locally. If you want dashboard upload and shared run links
 
 ```bash
 # Authenticate
-khaos sync --login
+khaos login
 
 # Upload new runs
 khaos run hello-agent --sync
@@ -204,7 +204,7 @@ khaos run hello-agent --sync
 khaos sync --status
 
 # Logout
-khaos sync --logout
+khaos logout
 ```
 
 Environment variables for CI:
@@ -252,7 +252,7 @@ Then re-run using the discovered agent name.
 Run:
 
 ```bash
-khaos sync --login
+khaos login
 ```
 
 ### Need command help

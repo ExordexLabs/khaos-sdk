@@ -142,6 +142,17 @@ def discover(
             typer.echo(json.dumps({"scanned": scanned, "discovered": 0, "agents": []}, indent=2))
         else:
             console.print(f"[yellow]No @khaosagent decorated agents found in {scanned} files.[/yellow]")
+            console.print(
+                "\n[dim]To register an agent, add the @khaosagent decorator to your agent's handler function:[/dim]\n"
+                "\n"
+                "  [cyan]from khaos import khaosagent[/cyan]\n"
+                "\n"
+                "  [cyan]@khaosagent(name=\"my-agent\", version=\"1.0.0\")[/cyan]\n"
+                "  [cyan]def handle(message: str) -> str:[/cyan]\n"
+                "      [cyan]...[/cyan]\n"
+                "\n"
+                "[dim]Docs: https://exordex.com/khaos/docs/agents[/dim]"
+            )
         return
 
     # Register discovered agents (unless dry-run)

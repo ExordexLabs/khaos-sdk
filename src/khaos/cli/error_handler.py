@@ -151,11 +151,11 @@ SUGGESTIONS = {
     "expired_token": (
         "Your authentication token has expired.\n"
         "Run: khaos sync (it will auto-login)\n"
-        "Or: khaos sync --login to force reset credentials"
+        "Or: khaos login --force to reset credentials"
     ),
     "invalid_token": (
         "The API token is invalid.\n"
-        "Run: khaos sync --login to reset credentials"
+        "Run: khaos login --force to reset credentials"
     ),
 
     # API key errors
