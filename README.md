@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/khaos_sdk.png" alt="Khaos SDK" width="600" />
+</p>
+
 # Khaos SDK
 
 Chaos engineering and security testing for AI agents.
