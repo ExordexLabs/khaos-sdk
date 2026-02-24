@@ -94,6 +94,7 @@ def _register_commands() -> None:
     from khaos.cli.commands.artifacts import artifacts
     from khaos.cli.commands.tokens import tokens_app
     from khaos.cli.commands.attacks import attacks_app
+    from khaos.cli.commands.mcp import mcp_app
     from khaos.cli.commands.playground import playground_app
     from khaos.cli.commands.demo import demo
     from khaos.cli.commands.test import test
@@ -126,6 +127,9 @@ def _register_commands() -> None:
 
     # Attack discovery commands
     app.add_typer(attacks_app, name="attacks")
+
+    # MCP server security testing
+    app.add_typer(mcp_app, name="mcp")
 
     # Taxonomy browsing commands
     app.add_typer(taxonomy_app, name="taxonomy")

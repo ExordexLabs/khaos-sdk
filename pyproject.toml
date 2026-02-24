@@ -31,6 +31,8 @@ dependencies = [
   "google-generativeai>=0.5",
   # Core framework
   "langgraph>=0.2",
+  # MCP server security testing
+  "mcp>=1.0",
 ]
 
 [project.optional-dependencies]
@@ -63,6 +65,7 @@ Changelog = "https://github.com/ExordexLabs/khaos-sdk/releases"
 khaos = "khaos.cli:app"
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-q --cov=src/khaos --cov-report=term-missing"
 filterwarnings = [
@@ -140,6 +143,9 @@ omit = [
   "src/khaos/discovery/detector.py",
   # MCP HTTP proxy - requires live upstream MCP server
   "src/khaos/mcp/http_proxy.py",
+  # MCP evaluator - requires live MCP server connections
+  "src/khaos/evaluator/mcp/*",
+  "src/khaos/cli/commands/mcp.py",
   # Adaptive security runner - experimental (integration tested)
   "src/khaos/security/adaptive_runner.py",
   # Testing framework - integration tested via `khaos test`

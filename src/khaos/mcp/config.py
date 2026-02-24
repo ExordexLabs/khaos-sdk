@@ -128,3 +128,96 @@ def discover_default_config_paths(project_root: Path | None = None) -> list[Path
     project_config = project_root / ".khaos" / "mcp.json"
     paths.append(project_config)
     return paths
+
+
+# ---------------------------------------------------------------------------
+# Claude Desktop config support
+# ---------------------------------------------------------------------------
+
+import platform
+
+CLAUDE_DESKTOP_CONFIG_PATHS: list[Path] = [
+    # macOS
+    Path.home() / "Library" / "Application Support" / "Claude" / "claude_desktop_config.json",
+    # Linux
+    Path.home() / ".config" / "claude" / "claude_desktop_config.json",
+    # Windows
+    Path.home() / "AppData" / "Roaming" / "Claude" / "claude_desktop_config.json",
+]
+
+
+def detect_claude_desktop_config() -> Path | None:
+    """Auto-detect the Claude Desktop config file path.
+
+    Checks platform-specific paths and returns the first one that exists,
+    or None if no config is found.
+    """
+    for path in CLAUDE_DESKTOP_CONFIG_PATHS:
+        if path.exists():
+            return path
+    return None
+
+
+def parse_claude_desktop_config(
+    path: Path | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Parse a Claude Desktop ``claude_desktop_config.json`` file.
+
+    The Claude Desktop format stores MCP servers under ``mcpServers``::
+
+        {
+          "mcpServers": {
+            "filesystem": {
+              "command": "npx",
+              "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"],
+              "env": {"VAR": "value"}
+            }
+          }
+        }
+
+    Returns a dict mapping server name → config dict with ``name``,
+    ``command``, ``args``, ``env``, and ``transport`` keys.
+    """
+    if path is None:
+        path = detect_claude_desktop_config()
+    if path is None:
+        raise MCPConfigError(
+            "Claude Desktop config not found. "
+            "Checked: " + ", ".join(str(p) for p in CLAUDE_DESKTOP_CONFIG_PATHS)
+        )
+
+    try:
+        raw = json.loads(path.read_text())
+    except FileNotFoundError:
+        raise MCPConfigError(f"Claude Desktop config not found at {path}")
+    except json.JSONDecodeError as exc:
+        raise MCPConfigError(f"Failed to parse Claude Desktop config at {path}: {exc}") from exc
+
+    mcp_servers = raw.get("mcpServers", {})
+    if not isinstance(mcp_servers, dict):
+        raise MCPConfigError(
+            f"'mcpServers' in {path} must be an object, got {type(mcp_servers).__name__}"
+        )
+
+    result: dict[str, dict[str, Any]] = {}
+    for name, server_config in mcp_servers.items():
+        if not isinstance(server_config, dict):
+            raise MCPConfigError(
+                f"Server '{name}' in {path} must be an object"
+            )
+        entry: dict[str, Any] = {
+            "name": name,
+            "transport": "stdio",
+        }
+        if "command" in server_config:
+            entry["command"] = server_config["command"]
+        if "args" in server_config:
+            entry["args"] = server_config["args"]
+        if "env" in server_config:
+            entry["env"] = server_config["env"]
+        if "url" in server_config:
+            entry["transport"] = "sse"
+            entry["url"] = server_config["url"]
+        result[name] = entry
+
+    return result
