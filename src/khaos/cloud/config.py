@@ -34,7 +34,7 @@ def _first_env(*keys: str) -> str | None:
 class CloudConfig:
     """Represents persisted CLI cloud settings."""
 
-    api_url: str = "https://api.exordex.com"
+    api_url: str = "https://api.khaos.exordex.com"
     dashboard_url: str | None = None
     project_id: str | None = None
     token: str | None = None

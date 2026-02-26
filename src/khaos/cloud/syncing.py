@@ -55,7 +55,7 @@ def ensure_logged_in(*, scopes: list[str] | None = None, force: bool = False) ->
     if is_localhost and not os.environ.get("KHAOS_DEV"):
         force = True
         # Reset api_url/dashboard_url so the device flow targets production.
-        config.api_url = "https://api.exordex.com"
+        config.api_url = "https://api.khaos.exordex.com"
         config.dashboard_url = "https://khaos.exordex.com"
 
     if config.token and config.project_id and not force:
