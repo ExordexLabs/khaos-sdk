@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 from khaos.output import extract_output_text
+
+if TYPE_CHECKING:
+    from khaos.testing.classification import ClassificationResult
+    from khaos.testing.metadata import ReproducibilityMetadata
 
 
 @dataclass
@@ -20,6 +24,36 @@ class AgentResponse:
     tokens_in: int = 0
     tokens_out: int = 0
     error: str | None = None
+
+    # Enriched fields (populated when classification is available)
+    classification: ClassificationResult | None = None
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
+    llm_events: list[dict[str, Any]] = field(default_factory=list)
+    metadata: ReproducibilityMetadata | None = None
+
+    @property
+    def blocked(self) -> bool:
+        """True if the response was classified as BLOCKED."""
+        if self.classification is not None:
+            from khaos.testing.classification import Outcome
+            return self.classification.outcome == Outcome.BLOCKED
+        return not self.success
+
+    @property
+    def compromised(self) -> bool:
+        """True if the response was classified as COMPROMISED."""
+        if self.classification is not None:
+            from khaos.testing.classification import Outcome
+            return self.classification.outcome == Outcome.COMPROMISED
+        return False
+
+    @property
+    def inconclusive(self) -> bool:
+        """True if the response was classified as INCONCLUSIVE."""
+        if self.classification is not None:
+            from khaos.testing.classification import Outcome
+            return self.classification.outcome == Outcome.INCONCLUSIVE
+        return False
 
 
 class AgentTestClient:
@@ -70,16 +104,23 @@ class AgentTestClient:
 
         elapsed = (time.perf_counter() - start) * 1000
         payload = raw.get("payload", {})
-        metadata = raw.get("metadata", {})
+        raw_metadata = raw.get("metadata", {})
+
+        # Extract tool calls from raw response
+        tool_calls: list[dict[str, Any]] = []
+        raw_tool_calls = raw_metadata.get("tool_calls") or payload.get("tool_calls")
+        if isinstance(raw_tool_calls, list):
+            tool_calls = [tc for tc in raw_tool_calls if isinstance(tc, dict)]
 
         resp = AgentResponse(
             success=payload.get("status") != "error",
             text=extract_output_text(raw),
             raw=raw,
             latency_ms=elapsed,
-            tokens_in=metadata.get("tokens_in", 0),
-            tokens_out=metadata.get("tokens_out", 0),
+            tokens_in=raw_metadata.get("tokens_in", 0),
+            tokens_out=raw_metadata.get("tokens_out", 0),
             error=payload.get("error"),
+            tool_calls=tool_calls,
         )
         self._calls.append(resp)
         return resp

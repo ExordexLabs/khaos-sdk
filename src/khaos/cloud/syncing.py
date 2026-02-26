@@ -30,11 +30,33 @@ class SyncAttempt:
     error: str | None = None
 
 
+def _is_localhost_config(config: "CloudConfig") -> bool:
+    """Return True if api_url or dashboard_url point to localhost (stale dev config)."""
+    for url in (config.api_url or "", config.dashboard_url or ""):
+        if "localhost" in url or "127.0.0.1" in url:
+            return True
+    return False
+
+
 def ensure_logged_in(*, scopes: list[str] | None = None, force: bool = False) -> None:
-    """Ensure a usable cloud config exists, starting device flow if needed."""
+    """Ensure a usable cloud config exists, starting device flow if needed.
+
+    Also detects stale localhost configs (left over from local development)
+    and forces re-login against the production API.  Set KHAOS_DEV=1 to
+    skip this check when doing local development.
+    """
 
     scopes = scopes or ["ingest:write"]
     config = load_cloud_config()
+
+    # Detect stale localhost config (dev leftovers) — force re-login unless
+    # the developer explicitly opted in via KHAOS_DEV=1.
+    is_localhost = _is_localhost_config(config)
+    if is_localhost and not os.environ.get("KHAOS_DEV"):
+        force = True
+        # Reset api_url/dashboard_url so the device flow targets production.
+        config.api_url = "https://api.exordex.com"
+        config.dashboard_url = "https://khaos.exordex.com"
 
     if config.token and config.project_id and not force:
         return

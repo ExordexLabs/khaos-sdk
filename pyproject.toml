@@ -64,6 +64,9 @@ Changelog = "https://github.com/ExordexLabs/khaos-sdk/releases"
 [project.scripts]
 khaos = "khaos.cli:app"
 
+[project.entry-points."pytest11"]
+khaos = "khaos.testing.pytest_plugin"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
@@ -77,6 +80,9 @@ markers = [
   "integration: marks integration tests (run with slower/IO fixtures)",
   "timeout: marks tests with custom timeout requirements",
   "slow: marks longer-running scenarios",
+  "khaos: marks khaos agent tests (auto-added by pytest plugin)",
+  "khaos_slow: marks long-running khaos agent tests",
+  "khaos_security: marks security-focused khaos agent tests",
 ]
 
 [tool.coverage.run]
@@ -152,6 +158,9 @@ omit = [
   "src/khaos/testing/__init__.py",
   "src/khaos/testing/client.py",
   "src/khaos/testing/runner.py",
+  "src/khaos/testing/pytest_plugin.py",
+  "src/khaos/testing/assertions.py",
+  "src/khaos/testing/snapshots.py",
   "src/khaos/cli/commands/test.py",
 ]
 

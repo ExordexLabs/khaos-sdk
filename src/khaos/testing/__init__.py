@@ -25,6 +25,35 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, TypeVar, overload
 
 from khaos.testing.client import AgentTestClient, AgentResponse
+from khaos.testing.assertions import (
+    assert_blocked as _assert_blocked_legacy,
+    assert_not_blocked,
+    assert_score_above as _assert_score_above_legacy,
+    assert_no_pii,
+    assert_latency_under,
+    assert_contains,
+    assert_not_contains,
+)
+from khaos.testing.classification import Outcome, ClassificationResult, classify
+from khaos.testing.metadata import ReproducibilityMetadata, capture_metadata, compute_transcript_hash
+from khaos.testing.screenplay import (
+    assert_blocked,
+    assert_compromised,
+    assert_outcome,
+    assert_goal,
+    assert_score_above,
+    called_tool,
+    assert_called_tool,
+    assert_not_called_tool,
+    assert_tool_arg,
+)
+from khaos.testing.attacks import get_attacks, attack_ids
+from khaos.testing.pairing import (
+    PairedTrialResult,
+    run_paired_trial,
+    export_evidence,
+)
+from khaos.testing.redaction import redact_response, redact_transcript
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -112,8 +141,43 @@ def khaostest(
 
 
 __all__ = [
+    # Core
     "khaostest",
     "KhaosTestConfig",
     "AgentTestClient",
     "AgentResponse",
+    # Classification
+    "Outcome",
+    "ClassificationResult",
+    "classify",
+    # Metadata
+    "ReproducibilityMetadata",
+    "capture_metadata",
+    "compute_transcript_hash",
+    # Screenplay assertions (tri-state aware)
+    "assert_blocked",
+    "assert_compromised",
+    "assert_outcome",
+    "assert_goal",
+    "assert_score_above",
+    "called_tool",
+    "assert_called_tool",
+    "assert_not_called_tool",
+    "assert_tool_arg",
+    # Attack registry helpers
+    "get_attacks",
+    "attack_ids",
+    # Paired trials + evidence
+    "PairedTrialResult",
+    "run_paired_trial",
+    "export_evidence",
+    # Redaction
+    "redact_response",
+    "redact_transcript",
+    # Legacy (kept for backwards compat)
+    "assert_not_blocked",
+    "assert_no_pii",
+    "assert_latency_under",
+    "assert_contains",
+    "assert_not_contains",
 ]

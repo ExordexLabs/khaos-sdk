@@ -608,6 +608,30 @@ def run_with_pack(
 
     attack_ids = _normalize_attack_ids(attack_ids)
 
+    # Pre-flight: ensure auth when syncing to cloud.
+    # This runs BEFORE the evaluation so the user isn't interrupted after a
+    # long-running run, and so that ~/.khaos/cloud.json has the correct
+    # dashboard_url / project_id for the footer URL.
+    if sync_cloud:
+        from khaos.cloud.syncing import ensure_logged_in
+        from khaos.cloud.config import load_cloud_config as _load_cloud_config
+
+        try:
+            ensure_logged_in()
+        except Exception as exc:
+            if not quiet:
+                console.print(f"[yellow]Cloud sync requires authentication: {exc}[/yellow]")
+                console.print("[dim]Run without --sync, or run 'khaos login' first.[/dim]")
+            raise typer.Exit(code=1)
+
+        cloud_config = _load_cloud_config()
+        if not quiet and not json_output:
+            project_label = cloud_config.project_id or "default"
+            console.print(
+                f"[dim]Syncing to[/dim] [bold cyan]{project_label}[/bold cyan] "
+                f"[dim]on[/dim] {cloud_config.get_dashboard_url()}"
+            )
+
     # Clear any previously collected security events
     _clear_security_events()
 
@@ -1143,8 +1167,7 @@ def _save_and_enqueue_for_sync(
         if attempt.success:
             if not quiet:
                 console.print("[green]done[/green]")
-                if attempt.dashboard_url:
-                    console.print(f"[green]✓[/green] View in dashboard: {attempt.dashboard_url}")
+                # URL already shown in the run footer — just show artifact helpers
                 export_path = Path.cwd() / f"{run_id}.json"
                 console.print(f"[dim]Export artifacts:[/dim] khaos export {run_id} --out {export_path}")
                 console.print(f"[dim]Local artifacts:[/dim] {trace_path}  {metrics_path}")

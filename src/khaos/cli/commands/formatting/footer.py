@@ -67,6 +67,10 @@ def print_run_footer(
         agent_version=agent_version,
     )
 
+    # Suppress localhost URLs (stale dev config) — show waitlist message instead.
+    if url and ("localhost" in url or "127.0.0.1" in url):
+        url = None
+
     console.print()
     console.print(Rule(style="dim"))
 
