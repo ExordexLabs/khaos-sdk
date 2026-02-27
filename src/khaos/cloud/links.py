@@ -26,10 +26,11 @@ def encode_evaluation_id(
     agent_name: str | None = None,
     agent_version: str | None = None,
 ) -> str:
-    base = name or pack_name or scenario_identifier or "evaluation"
-    agent_part = " ".join([p for p in [agent_name, agent_version] if p]).strip()
-    label = " ".join([p for p in [base, agent_part] if p]).strip()
-    slug = _slugify(label)
+    # Use a short human-readable prefix + run_id.
+    # The dashboard only uses the part after '__' (the run_id) for lookups,
+    # so the prefix is purely cosmetic for readable URLs.
+    base = name or pack_name or scenario_identifier or "eval"
+    slug = _slugify(base)
     return f"{slug}{EVALUATION_ID_DELIMITER}{run_id}"
 
 
