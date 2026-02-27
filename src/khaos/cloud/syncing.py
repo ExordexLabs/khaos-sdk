@@ -58,6 +58,11 @@ def ensure_logged_in(*, scopes: list[str] | None = None, force: bool = False) ->
         config.api_url = "https://api.khaos.exordex.com"
         config.dashboard_url = "https://khaos.exordex.com"
 
+    # Force re-login if project_id is missing the owner slug (e.g. "project1"
+    # instead of "robert-moseley/project1").  The dashboard URL requires both.
+    if config.project_id and "/" not in config.project_id:
+        force = True
+
     if config.token and config.project_id and not force:
         return
 
