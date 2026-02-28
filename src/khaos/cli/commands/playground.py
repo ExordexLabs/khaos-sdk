@@ -114,7 +114,7 @@ def start(
     session_token = _request_cloud_session(agent_name)
 
     # Railway WebSocket relay URL (env var override only)
-    railway_ws_url = os.environ.get("KHAOS_RAILWAY_WS_URL", "wss://api.khaos.dev/ws")
+    railway_ws_url = os.environ.get("KHAOS_RAILWAY_WS_URL", "wss://ws.khaos.exordex.com")
 
     console.print(
         f"[bold cyan]Khaos Playground[/bold cyan] Starting interactive session...\n"
