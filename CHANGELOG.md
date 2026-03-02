@@ -5,6 +5,12 @@ All notable changes to the Khaos SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] - 2026-03-02
+
+### Fixed
+- Fix R2 trace uploads: strip Bearer token from presigned URL requests to prevent auth conflicts with S3-compatible storage
+- Add `x-amz-content-sha256` header to R2 presigned upload URLs (required by Cloudflare R2)
+
 ## [1.0.8] - 2026-02-27
 
 ### Fixed

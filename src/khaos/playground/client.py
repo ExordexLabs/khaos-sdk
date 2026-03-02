@@ -388,15 +388,8 @@ class PlaygroundClient:
 
             if response_line:
                 response = json.loads(response_line)
-                response_text = response.get("payload", {}).get("value", "")
-                if not response_text:
-                    payload = response.get("payload", {})
-                    response_text = (
-                        payload.get("text")
-                        or payload.get("content")
-                        or payload.get("message")
-                        or str(payload)
-                    )
+                from khaos.output import extract_output_text
+                response_text = extract_output_text(response.get("payload", {}))
 
                 # Extract token usage from agent response as fallback
                 payload = response.get("payload", {})

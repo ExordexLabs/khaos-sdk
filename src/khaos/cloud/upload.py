@@ -192,12 +192,18 @@ class UploadClient:
 
     def _send(self, method: str, url: str, **kwargs) -> httpx.Response:
         headers = dict(kwargs.pop("headers", {}) or {})
-        if self._is_ingestion_url(url) and method.upper() in {"POST", "PUT", "PATCH"}:
+        is_external = url.startswith("http") and not url.startswith(str(self.client.base_url))
+        if not is_external and method.upper() in {"POST", "PUT", "PATCH"}:
             headers.setdefault("Idempotency-Key", uuid.uuid4().hex)
         last_exc: Exception | None = None
         for attempt in range(self.MAX_ATTEMPTS):
             try:
-                response = self.client.request(method, url, headers=headers, **kwargs)
+                # For external URLs (e.g. R2 presigned URLs), use a plain request
+                # to avoid sending the Bearer token which breaks presigned URL auth.
+                if is_external:
+                    response = httpx.request(method, url, headers=headers, timeout=DEFAULT_TIMEOUT, **kwargs)
+                else:
+                    response = self.client.request(method, url, headers=headers, **kwargs)
             except httpx.RequestError as exc:  # pragma: no cover - network stack
                 last_exc = exc
                 if attempt == self.MAX_ATTEMPTS - 1:
