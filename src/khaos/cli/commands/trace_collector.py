@@ -280,7 +280,7 @@ def build_pack_trace_from_events(
             "content_hash": content_hash,
             "preview": preview,
             "faults": current_context.get("faults") or [],
-            "security_mode": current_context.get("security_mode"),
+            "security_mode": current_context.get("security_mode") if phase.lower() == "security" else None,
             "llm": llm_summary,
             "verdict": verdict,
             "is_multi_turn": is_multi_turn,

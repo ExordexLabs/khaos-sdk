@@ -422,7 +422,7 @@ class SingleTurnInvoker:
             "phase": phase_name or "unknown",
             "input_id": input_id,
             "faults": fault_types,
-            "security_mode": self.config.security_mode,
+            "security_mode": self.config.security_mode if (phase_name or "").lower() == "security" else None,
         }
 
         for item in captured:
@@ -855,7 +855,7 @@ class MultiTurnInvoker:
                     "phase": phase,
                     "input_id": inp.id,
                     "faults": list(t.faults_applied or []),
-                    "security_mode": self.config.security_mode,
+                    "security_mode": self.config.security_mode if (phase or "").lower() == "security" else None,
                     "is_multi_turn": True,
                     "turn_index": t.turn_index,
                     "turn_count": len(turn_results),
